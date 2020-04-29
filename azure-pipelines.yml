@@ -22,7 +22,6 @@ steps:
   inputs:
     SonarCloud: 'Connection PLSQL-SGA'
     organization: 'claro2020'
-    scannerMode: 'MSBuild'
-    projectKey: 'PLSQL-SGA-OPERACION'
-    projectName: 'PLSQL-SGA-OPERACION'
+    scannerMode: 'CLI'
+    configMode: 'file'
 - task: SonarCloudAnalyze@1
