@@ -1,0 +1,1 @@
+grant select, insert, update, delete on OPERACION.LOG_INST_EQUIPO_HFC to R_PROD;

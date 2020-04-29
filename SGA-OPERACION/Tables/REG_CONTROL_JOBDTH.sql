@@ -1,0 +1,13 @@
+CREATE TABLE OPERACION.REG_CONTROL_JOBDTH
+(
+  IDCONTROLJOB  NUMBER,
+  PID           NUMBER,
+  FECCORTE      DATE,
+  ESTADO        NUMBER,
+  TRANSACCION   VARCHAR2(50 BYTE),
+  NUMREGISTRO   CHAR(10 BYTE),
+  CODUSU        VARCHAR2(30 BYTE)               DEFAULT user,
+  FECUSU        DATE                            DEFAULT sysdate
+);
+
+

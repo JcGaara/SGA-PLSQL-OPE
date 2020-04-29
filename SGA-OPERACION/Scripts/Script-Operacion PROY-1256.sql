@@ -1,0 +1,9 @@
+insert into OPERACION.TIPOPEDD (TIPOPEDD, DESCRIPCION, ABREV)
+values ((select max(tipopedd) + 1 from TIPOPEDD), 'Proyectos Corporativos', 'APROB_AUT_SEF_CORP');
+commit;
+
+INSERT INTO OPERACION.CONSTANTE(CONSTANTE,DESCRIPCION,TIPO,VALOR)
+VALUES('APROB_PROY_GERE','Aprobacion Proyectos Corporativos Gerencia Comercial','C','21/03/2012');
+INSERT INTO OPERACION.CONSTANTE(CONSTANTE,DESCRIPCION,TIPO,VALOR)
+VALUES('APROB_PROY_PREV','Aprobacion Proyectos Corporativos Preventa','C','21/03/2012');
+COMMIT;

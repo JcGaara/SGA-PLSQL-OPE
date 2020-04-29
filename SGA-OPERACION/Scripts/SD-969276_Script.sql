@@ -1,0 +1,28 @@
+Update operacion.tipequ Set tipo = 'CONTROL REMOTO' Where tipequ =5997;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =5998;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =6852;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =8103;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =10331;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =10801;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =9791;
+Update operacion.tipequ Set tipo = 'DECODIFICADOR' Where tipequ =15827;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =7538;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =14897;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =15306;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =9785;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =11285;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =15308;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =15309;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =10388;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =11843;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =11483;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =11495;
+Update operacion.tipequ Set tipo = 'MTA' Where tipequ =15717;
+Update operacion.tipequ Set tipo = 'ROUTER' Where tipequ =7184;
+Update operacion.tipequ Set tipo = 'ROUTER' Where tipequ =7219;
+Update operacion.tipequ Set tipo = 'ROUTER' Where tipequ =5928;
+Update operacion.tipequ Set tipo = 'TELÉFONO' Where tipequ =7251;
+Update operacion.tipequ Set tipo = 'TELÉFONO' Where tipequ =10391;
+Update operacion.tipequ Set tipo = 'TELÉFONO' Where tipequ =11377;
+
+commit;

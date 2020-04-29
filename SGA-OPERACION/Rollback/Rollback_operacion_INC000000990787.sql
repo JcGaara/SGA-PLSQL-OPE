@@ -1,0 +1,4 @@
+
+drop view OPERACION.PROV_BSCS_IL_LTE ;
+
+

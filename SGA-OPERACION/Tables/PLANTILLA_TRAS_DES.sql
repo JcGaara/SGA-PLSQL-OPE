@@ -1,0 +1,27 @@
+CREATE TABLE OPERACION.PLANTILLA_TRAS_DES
+(
+  CODPERFIL    NUMBER,
+  CENTRO_DES   VARCHAR2(4 BYTE),
+  ALMACEN_DES  VARCHAR2(4 BYTE),
+  ESTADO       NUMBER                           DEFAULT 1,
+  USUREG       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECREG       DATE                             DEFAULT sysdate               NOT NULL,
+  USUMOD       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECMOD       DATE                             DEFAULT sysdate               NOT NULL
+);
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.CODPERFIL IS 'Perfil de Plantilla';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.CENTRO_DES IS 'Centro Destino de Traslado';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.ALMACEN_DES IS 'Almacen Destino de Traslado';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.USUREG IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.FECREG IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.USUMOD IS 'Codigo de Usuario modificador';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_DES.FECMOD IS 'Fecha de modificación';
+
+

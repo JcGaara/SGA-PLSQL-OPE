@@ -1,0 +1,22 @@
+CREATE TABLE OPERACION.CLIENTEINT
+(
+  CLIINT       CHAR(3 BYTE)                     NOT NULL,
+  DESCRIPCION  VARCHAR2(200 BYTE)               NOT NULL,
+  ABREVI       VARCHAR2(20 BYTE),
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.CLIENTEINT IS 'Cliente interno de la empresa';
+
+COMMENT ON COLUMN OPERACION.CLIENTEINT.CLIINT IS 'Codigo del cliente interno (Pk)';
+
+COMMENT ON COLUMN OPERACION.CLIENTEINT.DESCRIPCION IS 'Descripcion del cliente interno';
+
+COMMENT ON COLUMN OPERACION.CLIENTEINT.ABREVI IS 'Abreviatura';
+
+COMMENT ON COLUMN OPERACION.CLIENTEINT.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.CLIENTEINT.CODUSU IS 'Codigo de Usuario registro';
+
+

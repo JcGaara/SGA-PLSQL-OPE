@@ -1,0 +1,1 @@
+drop trigger OPERACION.T_SOLOTPTOETAACT_BD;

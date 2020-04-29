@@ -1,0 +1,16 @@
+CREATE TABLE OPERACION.TIPOPEDD
+(
+  TIPOPEDD     NUMBER(6)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(30 BYTE),
+  ABREV        VARCHAR2(30 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.TIPOPEDD IS 'Tipo del listado de los tipo de datos de operaciones';
+
+COMMENT ON COLUMN OPERACION.TIPOPEDD.TIPOPEDD IS 'Tipo de la clasificacion de operaciones';
+
+COMMENT ON COLUMN OPERACION.TIPOPEDD.DESCRIPCION IS 'Descripcion de los tipos de operaciones';
+
+COMMENT ON COLUMN OPERACION.TIPOPEDD.ABREV IS 'Abreviatura';
+
+

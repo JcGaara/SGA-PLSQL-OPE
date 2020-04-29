@@ -1,0 +1,8 @@
+insert into tipopedd
+  (tipopedd, descripcion, abrev)
+values
+  ((select max(tipopedd) + 1 from operacion.tipopedd),
+   'Tipo Trabajo punto anexo', 'PUN_ANEX_TIP');
+
+commit;
+

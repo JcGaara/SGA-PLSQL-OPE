@@ -1,0 +1,76 @@
+CREATE TABLE OPERACION.PREUBIETAMAT
+(
+  CODPRE       NUMBER(8)                        NOT NULL,
+  IDUBI        NUMBER(10)                       NOT NULL,
+  CODETA       NUMBER(5)                        NOT NULL,
+  IDMAT        NUMBER(10)                       NOT NULL,
+  CODMAT       CHAR(15 BYTE)                    NOT NULL,
+  CANPRO       NUMBER(8,2),
+  COSPRO       NUMBER(10,2),
+  CANDIS       NUMBER(8,2),
+  COSDIS       NUMBER(10,2),
+  CANINS       NUMBER(8,2),
+  COSINS       NUMBER(10,2),
+  CANINS_ATE   NUMBER(8,2),
+  CANINS_SOL   NUMBER(8,2),
+  CANINS_DEV   NUMBER(8,2),
+  CANLIQ       NUMBER(8,2),
+  COSLIQ       NUMBER(10,2),
+  CONTRATA     NUMBER(1)                        DEFAULT 0,
+  OBSERVACION  VARCHAR2(400 BYTE),
+  CONDICION    NUMBER(1),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT USER                  NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  FLGSOL       NUMBER(1)                        DEFAULT 0,
+  MONEDA       CHAR(1 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.PREUBIETAMAT IS 'Materiales de cada etapa del presupuesto  (No es usada, reemplazado por WF)';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CODPRE IS 'Codigo del presupuesto';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.IDUBI IS 'Punto del presupuesto';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CODETA IS 'Codigo de la etapa';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.IDMAT IS 'Identificador de la tabla';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CODMAT IS 'Codigo de material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANPRO IS 'Cantidad de material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.COSPRO IS 'Costo proyectado (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANDIS IS 'Cantidad en la fase de diseño del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.COSDIS IS 'Costo de diseño del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANINS IS 'Cantidad en la fase de instalacion del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.COSINS IS 'Costo de instalación del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANINS_ATE IS 'Cantidad atendida del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANINS_SOL IS 'Cantidad devuelta del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANINS_DEV IS 'Cantidad devuelta del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CANLIQ IS 'Cantidad en la fase de liquidacion del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.COSLIQ IS 'Costo de liquidacion del material';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CONTRATA IS 'Indica si el material es entregado por el contratista';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CONDICION IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.FLGSOL IS 'Indica si el material es solicitado';
+
+COMMENT ON COLUMN OPERACION.PREUBIETAMAT.MONEDA IS 'Codigo de moneda';
+
+

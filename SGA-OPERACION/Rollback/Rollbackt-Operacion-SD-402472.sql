@@ -1,0 +1,3 @@
+--elimina index
+DROP INDEX IX_SOLOTPTOEQU_001;
+/

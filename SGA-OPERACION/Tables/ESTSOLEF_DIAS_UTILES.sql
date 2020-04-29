@@ -1,0 +1,15 @@
+CREATE TABLE OPERACION.ESTSOLEF_DIAS_UTILES
+(
+  IDSEC       NUMBER(15)                        NOT NULL,
+  CODEF       NUMBER(8),
+  CODCLI      CHAR(8 BYTE),
+  CODAREA     NUMBER(4),
+  ESTSOLEF    NUMBER(2),
+  FECHAINI    DATE,
+  FECHAFIN    DATE,
+  CODUSU      VARCHAR2(30 BYTE)                 DEFAULT user,
+  DIAS        NUMBER(16,6),
+  FLG_VALIDO  NUMBER(1)                         DEFAULT 1
+);
+
+

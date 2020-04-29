@@ -1,0 +1,22 @@
+CREATE TABLE OPERACION.TRANSACCIONES_CABLE
+(
+  IDTRANS      NUMBER                           NOT NULL,
+  IDFAC        CHAR(10 BYTE),
+  NOMABR       VARCHAR2(50 BYTE),
+  CODCLI       CHAR(8 BYTE),
+  TRANSACCION  CHAR(10 BYTE),
+  FECINI       DATE,
+  FECFIN       DATE,
+  CODSOLOT     NUMBER(8),
+  CODUSU       VARCHAR2(30 BYTE),
+  FECUSU       DATE                             DEFAULT SYSDATE,
+  IDTRANSORI   NUMBER,
+  FECEMI       DATE,
+  FECVEN       DATE,
+  TIPO         NUMBER,
+  COMENTARIO   VARCHAR2(200 BYTE)
+);
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES_CABLE.COMENTARIO IS 'Comentario del resultado de la ejecucion de la transaccion';
+
+

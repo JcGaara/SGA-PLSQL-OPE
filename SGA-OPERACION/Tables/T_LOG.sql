@@ -1,0 +1,15 @@
+CREATE TABLE OPERACION.T_LOG
+(
+  ID_ORDEN     VARCHAR2(20 BYTE),
+  SNB          VARCHAR2(10 BYTE),
+  NCOS         VARCHAR2(5 BYTE),
+  LEN          VARCHAR2(30 BYTE),
+  CLLI         VARCHAR2(5 BYTE),
+  LINEATTR     VARCHAR2(10 BYTE),
+  PDTC         VARCHAR2(10 BYTE),
+  FECHA_CORTE  VARCHAR2(100 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.T_LOG IS 'almacena el estado de una lñinea, previo al corte de la misma.';
+
+

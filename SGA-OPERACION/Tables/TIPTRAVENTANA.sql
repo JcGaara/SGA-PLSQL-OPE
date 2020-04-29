@@ -1,0 +1,34 @@
+CREATE TABLE OPERACION.TIPTRAVENTANA
+(
+  TIPTRA     NUMBER,
+  IDVENTANA  NUMBER,
+  CONTRATA   NUMBER                             DEFAULT 0,
+  TITULO     VARCHAR2(400 BYTE)                 NOT NULL,
+  TIPO       NUMBER                             DEFAULT 1,
+  USUREG     VARCHAR2(30 BYTE)                  DEFAULT USER,
+  FECREG     DATE                               DEFAULT SYSDATE,
+  USUMOD     VARCHAR2(30 BYTE)                  DEFAULT USER,
+  FECMOD     DATE                               DEFAULT SYSDATE
+);
+
+COMMENT ON TABLE OPERACION.TIPTRAVENTANA IS 'Detalle motivo tipo de trabajo';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.TIPTRA IS 'Identificador de tipo de trabajo';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.IDVENTANA IS 'identificador de ventana';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.CONTRATA IS 'identificador de contrata';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.TITULO IS 'Identificador del titulo';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.TIPO IS 'Identificador del tipo';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.USUREG IS 'Usuario que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.FECREG IS 'Fecha que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.USUMOD IS 'Usuario que modificó el registro';
+
+COMMENT ON COLUMN OPERACION.TIPTRAVENTANA.FECMOD IS 'Fecha que modificó el registro';
+
+

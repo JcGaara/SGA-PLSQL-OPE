@@ -1,0 +1,16 @@
+CREATE OR REPLACE FUNCTION OPERACION.F_GET_AREA_USUARIO RETURN number IS
+LS_AREA areaope.AREA%type;
+
+BEGIN
+   SELECT AREA INTO LS_AREA FROM USUARIOOPE WHERE usuario = user and rownum = 1;
+   IF LS_AREA IS NULL THEN
+      RAISE_APPLICATION_ERROR(-20500,'NO SE ENCONTRO EL AREA');
+   END IF;
+   RETURN LS_AREA;
+/*exception
+   when others then
+      return null;*/
+END;
+/
+
+

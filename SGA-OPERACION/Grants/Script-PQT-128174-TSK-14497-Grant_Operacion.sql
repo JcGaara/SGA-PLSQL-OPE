@@ -1,0 +1,1 @@
+grant select on operacion.inssrv to USRSGACLAROCLUB;

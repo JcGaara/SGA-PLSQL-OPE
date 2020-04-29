@@ -1,0 +1,63 @@
+-- Create table
+create table OPERACION.IW_ENDPOINTS
+(
+  IDTRANSACCION   NUMBER,
+  IDSERVICIO      VARCHAR2(20),
+  IDPRODUCTO      VARCHAR2(20),
+  IDVENTA         VARCHAR2(20),
+  IDSERVICIOPADRE VARCHAR2(20),
+  IDPRODUCTOPADRE VARCHAR2(20),
+  IDVENTAPADRE    VARCHAR2(20),
+  ENDPOINTNUMBER  VARCHAR2(10),
+  TN              VARCHAR2(10),
+  EPPROFILE       VARCHAR2(10),
+  EPHOMEEXCHANGE  VARCHAR2(10),
+  FECHAALTA       VARCHAR2(20),
+  FECHAACTIVACION VARCHAR2(20),
+  ACTIVO          VARCHAR2(10),
+  IPAPLICACION    VARCHAR2(30) default SYS_CONTEXT('USERENV','IP_ADDRESS'),
+  USUARIOAPP      VARCHAR2(30) default USER,
+  FECUSU          DATE default SYSDATE,
+  PCAPLICACION    VARCHAR2(50) default SYS_CONTEXT('USERENV', 'TERMINAL')
+)
+tablespace OPERACION_DAT ;
+-- Add comments to the columns 
+comment on column OPERACION.IW_ENDPOINTS.IDTRANSACCION
+  is 'Ticket de IW';
+comment on column OPERACION.IW_ENDPOINTS.IDSERVICIO
+  is 'Id Servicio';
+comment on column OPERACION.IW_ENDPOINTS.IDPRODUCTO
+  is 'Id Producto';
+comment on column OPERACION.IW_ENDPOINTS.IDVENTA
+  is 'IDVENTA';
+comment on column OPERACION.IW_ENDPOINTS.IDSERVICIOPADRE
+  is 'Srv Padre';
+comment on column OPERACION.IW_ENDPOINTS.IDPRODUCTOPADRE
+  is 'Prd Padre';
+comment on column OPERACION.IW_ENDPOINTS.IDVENTAPADRE
+  is 'Vta Padre';
+comment on column OPERACION.IW_ENDPOINTS.ENDPOINTNUMBER
+  is 'End Point';
+comment on column OPERACION.IW_ENDPOINTS.TN
+  is 'TN';
+comment on column OPERACION.IW_ENDPOINTS.EPPROFILE
+  is 'EP';
+comment on column OPERACION.IW_ENDPOINTS.EPHOMEEXCHANGE
+  is 'Home Exchange';
+comment on column OPERACION.IW_ENDPOINTS.FECHAALTA
+  is 'Fec Alta';
+comment on column OPERACION.IW_ENDPOINTS.FECHAACTIVACION
+  is 'Fec Activacion';
+comment on column OPERACION.IW_ENDPOINTS.ACTIVO
+  is 'Activo';
+comment on column OPERACION.IW_ENDPOINTS.IPAPLICACION
+  is 'IP Aplicacion';
+comment on column OPERACION.IW_ENDPOINTS.USUARIOAPP
+  is 'Usuario APP';
+comment on column OPERACION.IW_ENDPOINTS.FECUSU
+  is 'Fecha de Registro';
+comment on column OPERACION.IW_ENDPOINTS.PCAPLICACION
+  is 'PC Aplicacion';
+-- Create/Recreate indexes 
+create index OPERACION.IDX_IW_ENDPOINTS on OPERACION.IW_ENDPOINTS (IDTRANSACCION)
+  tablespace OPERACION_DAT ;

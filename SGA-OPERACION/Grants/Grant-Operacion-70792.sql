@@ -1,0 +1,1 @@
+grant execute on operacion.pq_integracion_dth_adc to USRSISACT;

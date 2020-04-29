@@ -1,0 +1,2 @@
+REVOKE execute on OPERACION.PQ_SINERGIA from AGENLIQ
+/

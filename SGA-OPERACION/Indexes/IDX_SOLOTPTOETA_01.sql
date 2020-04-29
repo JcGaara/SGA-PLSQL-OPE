@@ -1,0 +1,1 @@
+create index operacion.IDX_SOLOTPTOETA_01 on operacion.SOLOTPTOETA (IDLIQ);

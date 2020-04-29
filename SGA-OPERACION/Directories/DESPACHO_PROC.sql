@@ -1,0 +1,5 @@
+CREATE OR REPLACE DIRECTORY 
+DESPACHO_PROC AS 
+'/u03/oracle/PESGAPRD/UTL_FILE/SGASAP/swap/despacho/procesado';
+
+

@@ -1,0 +1,13 @@
+CREATE TABLE OPERACION.TIPTRABAJOXFOR
+(
+  CODFOR  NUMBER(5)                             NOT NULL,
+  TIPTRA  NUMBER(4)                             NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.TIPTRABAJOXFOR IS 'Tabla para instanciar las formulas por el Tipo de Trabajo de la SOT';
+
+COMMENT ON COLUMN OPERACION.TIPTRABAJOXFOR.CODFOR IS 'Codigo de formula';
+
+COMMENT ON COLUMN OPERACION.TIPTRABAJOXFOR.TIPTRA IS 'Tipo de Trabajo';
+
+

@@ -1,0 +1,1 @@
+create index operacion.idx_id_proc_inv_eta_err on operacion.inventario_envio_eta_err(id_proceso) tablespace OPERACION_IDX;

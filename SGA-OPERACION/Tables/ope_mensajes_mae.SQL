@@ -1,0 +1,59 @@
+-- Create table
+create table OPERACION.OPE_MENSAJES_MAE
+(
+  IDMENSAJE         NUMBER not null,
+  MENSAJE           VARCHAR2(100),
+  DESCRIPCION       VARCHAR2(100),
+  APLICAXSEGMARK    NUMBER default 0,
+  ESTADO            NUMBER,
+  CODTIPO           NUMBER,
+  TRANSACCIONUNICA  CHAR(2),
+  SOBRETX           VARCHAR2(30),
+  DIASPOSTERIORESTX NUMBER,
+  CODFECHA          NUMBER,
+  USUREG            VARCHAR2(30) default USER,
+  FECREG            DATE default SYSDATE,
+  USUMOD            VARCHAR2(30) default USER,
+  FECMOD            DATE default SYSDATE
+)
+;
+-- Add comments to the table 
+comment on table OPERACION.OPE_MENSAJES_MAE
+  is 'TABLA PRINCIPAL DE MENSAJES';
+-- Add comments to the columns 
+comment on column OPERACION.OPE_MENSAJES_MAE.IDMENSAJE
+  is 'ID DEL MENSAJE';
+comment on column OPERACION.OPE_MENSAJES_MAE.MENSAJE
+  is 'NOMBRE DEL MENSAJE';
+comment on column OPERACION.OPE_MENSAJES_MAE.DESCRIPCION
+  is 'DESCRIPCION DEL MENSAJE';
+comment on column OPERACION.OPE_MENSAJES_MAE.APLICAXSEGMARK
+  is 'APLICA SEGMENTO DE MERCADO';
+comment on column OPERACION.OPE_MENSAJES_MAE.ESTADO
+  is 'ESTADO';
+comment on column OPERACION.OPE_MENSAJES_MAE.CODTIPO
+  is 'CODIGO DEL TIPO DE MENSAJE';
+comment on column OPERACION.OPE_MENSAJES_MAE.TRANSACCIONUNICA
+  is 'SI O NO';
+comment on column OPERACION.OPE_MENSAJES_MAE.SOBRETX
+  is 'SOBRE TRANSACCION UNICA';
+comment on column OPERACION.OPE_MENSAJES_MAE.DIASPOSTERIORESTX
+  is 'DIAS A ASIGNAR PARA EL ENVIO DE MENSAJE';
+comment on column OPERACION.OPE_MENSAJES_MAE.CODFECHA
+  is 'DIAS A CONSIDERAR';
+comment on column OPERACION.OPE_MENSAJES_MAE.USUREG
+  is 'USUARIO DE REGISTRO';
+comment on column OPERACION.OPE_MENSAJES_MAE.FECREG
+  is 'FECHA DE  REGISTRO';
+comment on column OPERACION.OPE_MENSAJES_MAE.USUMOD
+  is 'USUARIO DE MODIFICACION';
+comment on column OPERACION.OPE_MENSAJES_MAE.FECMOD
+  is 'FECHA  DE MODIFICACION';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table OPERACION.OPE_MENSAJES_MAE
+  add constraint PK_OPE_MENSAJES_MAE primary key (IDMENSAJE)
+  using index 
+  tablespace OPERACION_DAT
+;
+
+grant delete on operacion.OPE_MENSAJES_MAE to R_PROD;

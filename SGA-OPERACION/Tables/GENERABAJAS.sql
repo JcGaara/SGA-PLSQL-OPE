@@ -1,0 +1,20 @@
+CREATE TABLE OPERACION.GENERABAJAS
+(
+  TIPTRA       NUMBER(4)                        NOT NULL,
+  TIPSRV       CHAR(4 BYTE)                     NOT NULL,
+  ESTADONUEVO  NUMBER(2)                        NOT NULL,
+  OBLIGATORIO  NUMBER(2)                        DEFAULT 1,
+  TIPTRANUEVO  NUMBER(4)
+);
+
+COMMENT ON COLUMN OPERACION.GENERABAJAS.TIPTRA IS 'Tipo Trabajo';
+
+COMMENT ON COLUMN OPERACION.GENERABAJAS.TIPSRV IS 'Tipo servicio';
+
+COMMENT ON COLUMN OPERACION.GENERABAJAS.ESTADONUEVO IS 'Estado al que cambiará la SOT';
+
+COMMENT ON COLUMN OPERACION.GENERABAJAS.OBLIGATORIO IS '0 = solo propone generar SOT de baja; 1 = Debe generar obligatoriamente SOT de baja';
+
+COMMENT ON COLUMN OPERACION.GENERABAJAS.TIPTRANUEVO IS 'Tipo de trabajo de la SOT de baja a generar';
+
+

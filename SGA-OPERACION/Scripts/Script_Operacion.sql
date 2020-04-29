@@ -1,0 +1,60 @@
+-- Add/modify columns 
+ALTER TABLE operacion.trsoac ADD OBSERVACION VARCHAR2(500);
+-- Add comments to the columns 
+comment on column OPERACION.TRSOAC.observacion
+  is 'Observaciones';
+
+
+DECLARE
+  LI_COUNT    NUMBER;
+  LI_TIPOPEDD NUMBER;
+  LI_OPEDD    NUMBER;
+BEGIN
+  SELECT COUNT(1)
+    INTO LI_COUNT
+    FROM TIPOPEDD
+   WHERE ABREV = 'IDTRANCORTE_SUS';
+  IF LI_COUNT = 0 THEN
+    SELECT MAX(TIPOPEDD) + 1 INTO LI_TIPOPEDD FROM TIPOPEDD;
+    INSERT INTO TIPOPEDD
+      (TIPOPEDD, DESCRIPCION, ABREV)
+    VALUES
+      (LI_TIPOPEDD, 'Transaccion Corte_Suspension', 'IDTRANCORTE_SUS');
+    SELECT MAX(IDOPEDD) + 1 INTO LI_OPEDD FROM OPEDD;
+    INSERT INTO OPEDD
+      (IDOPEDD,
+       CODIGOC,
+       CODIGON,
+       DESCRIPCION,
+       ABREVIACION,
+       TIPOPEDD,
+       CODIGON_AUX)
+    VALUES
+      (LI_OPEDD,
+       NULL,
+       2,
+       'SUSPENSION FALTA DE PAGO ACT Y SUSP ',
+       'SUSFALTAPAGO',
+       LI_TIPOPEDD,
+       NULL);
+    INSERT INTO OPEDD
+      (IDOPEDD,
+       CODIGOC,
+       CODIGON,
+       DESCRIPCION,
+       ABREVIACION,
+       TIPOPEDD,
+       CODIGON_AUX)
+    VALUES
+      (LI_OPEDD + 1,
+       NULL,
+       8,
+       'SFP SERVICIOS ACTIVOS',
+       'SFP_SER_ACTIV',
+       LI_TIPOPEDD,
+       NULL);
+  END IF;
+END;
+/
+
+COMMIT;

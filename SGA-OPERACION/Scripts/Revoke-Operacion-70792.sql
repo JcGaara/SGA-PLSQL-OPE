@@ -1,0 +1,1 @@
+revoke execute on operacion.pq_integracion_dth_adc from USRSISACT;

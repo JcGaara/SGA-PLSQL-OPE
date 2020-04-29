@@ -1,0 +1,28 @@
+CREATE TABLE OPERACION.SOLOTPTO_ID_INF
+(
+  CODSOLOT     NUMBER(8)                        NOT NULL,
+  PUNTO        NUMBER(10)                       NOT NULL,
+  ORDEN        NUMBER(8)                        NOT NULL,
+  TIPINF       NUMBER(2),
+  OBSERVACION  VARCHAR2(400 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSU       DATE                             DEFAULT sysdate               NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTO_ID_INF IS 'Informe de la programación';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.CODSOLOT IS 'Codigo de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.PUNTO IS 'Punto de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.ORDEN IS 'Orden de la tabla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.TIPINF IS 'Tipo de información';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.OBSERVACION IS 'Observacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.CODUSU IS 'Registro de usuario';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_INF.FECUSU IS 'Fecha de registra';
+
+

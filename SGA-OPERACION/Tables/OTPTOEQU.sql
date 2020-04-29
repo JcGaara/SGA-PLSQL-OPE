@@ -1,0 +1,70 @@
+CREATE TABLE OPERACION.OTPTOEQU
+(
+  CODOT        NUMBER(8)                        NOT NULL,
+  PUNTO        NUMBER(10)                       NOT NULL,
+  ORDEN        NUMBER(4)                        NOT NULL,
+  CANTIDAD     NUMBER(8,2)                      DEFAULT 0                     NOT NULL,
+  CODTIPEQU    CHAR(15 BYTE),
+  OBSERVACION  VARCHAR2(240 BYTE),
+  TIPPRP       NUMBER(2)                        NOT NULL,
+  COSTO        NUMBER(8,2)                      DEFAULT 0                     NOT NULL,
+  ENACTA       NUMBER(1)                        DEFAULT 0                     NOT NULL,
+  NUMSERIE     CHAR(18 BYTE),
+  FECINS       DATE,
+  INSTALADO    NUMBER(1),
+  CODEQUCOM    CHAR(4 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  TIPEQU       NUMBER(6)                        NOT NULL,
+  ESTADO       VARCHAR2(30 BYTE),
+  TIPO         VARCHAR2(30 BYTE),
+  FLGINV       NUMBER(1)                        DEFAULT 0,
+  FECINV       DATE,
+  TIPCOMPRA    VARCHAR2(30 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.OTPTOEQU IS 'Equipos de cada detalle de la orden de trabajo (No es usada, remplazado por WF)';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.CODOT IS 'Codigo de la orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.PUNTO IS 'Punto de la ot';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.ORDEN IS 'ORDEN';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.CANTIDAD IS 'Cantidad de equipo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.CODTIPEQU IS 'Codigo del tipo de equipo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.OBSERVACION IS 'OBSERVACION';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.TIPPRP IS 'Tipo de propiedad';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.COSTO IS 'Costo del equipo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.ENACTA IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.NUMSERIE IS 'Numero de serie';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.FECINS IS 'Fecha de instalacion';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.INSTALADO IS 'Indica si el equipo esta instalado';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.CODEQUCOM IS 'Codigo del equipo comercial';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.TIPEQU IS 'Codigo de tipo de equipo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.ESTADO IS 'Estado del equipo en el punto';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.TIPO IS 'Tipo';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.FLGINV IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.FECINV IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.OTPTOEQU.TIPCOMPRA IS 'Tipo de compra';
+
+

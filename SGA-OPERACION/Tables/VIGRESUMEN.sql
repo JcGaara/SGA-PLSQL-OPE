@@ -1,0 +1,33 @@
+CREATE TABLE OPERACION.VIGRESUMEN
+(
+  ID           NUMBER(10)                       NOT NULL,
+  FASE         NUMBER(2),
+  TIPO         NUMBER(2),
+  IDETAPA      NUMBER(4),
+  NUMSLC       CHAR(10 BYTE),
+  CODSOLOT     NUMBER(8),
+  CODINSSRV    NUMBER(8),
+  DISTRITO     CHAR(10 BYTE),
+  AREAOPE      NUMBER(4),
+  FLGCLIENTE   NUMBER(1),
+  FECINICIO    DATE,
+  FECCOM       DATE,
+  DIAS_ATRASO  NUMBER(5),
+  ESTADO       NUMBER(1),
+  NUMPTO       CHAR(5 BYTE),
+  OBSERVACION  VARCHAR2(400 BYTE),
+  TIPSRV       CHAR(4 BYTE),
+  TIPTRS       NUMBER(2),
+  ESTADO_WF    NUMBER(2),
+  PID          NUMBER(10),
+  FECCOMPRY    DATE,
+  FECAPR       DATE,
+  TIPTRA       NUMBER(4),
+  CODSEGMARK   NUMBER(2),
+  SEDE         VARCHAR2(100 BYTE),
+  PUNTO        NUMBER(10),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECUSU       DATE                             DEFAULT sysdate
+);
+
+

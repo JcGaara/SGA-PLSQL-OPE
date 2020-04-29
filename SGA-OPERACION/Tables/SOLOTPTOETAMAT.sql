@@ -1,0 +1,91 @@
+CREATE TABLE OPERACION.SOLOTPTOETAMAT
+(
+  CODSOLOT        NUMBER(8),
+  PUNTO           NUMBER(10),
+  ORDEN           NUMBER(4),
+  CODMAT          CHAR(15 BYTE),
+  IDMAT           NUMBER(10)                    NOT NULL,
+  MONEDA_ID       NUMBER(10),
+  CANDIS          NUMBER(8,2),
+  COSDIS          NUMBER(10,2),
+  CANINS_ATE      NUMBER(8,2),
+  CANINS_SOL      NUMBER(8,2),
+  CANINS_DEV      NUMBER(8,2),
+  CANLIQ          NUMBER(8,2),
+  COSLIQ          NUMBER(10,2),
+  CONTRATA        NUMBER(1)                     DEFAULT 0,
+  OBSERVACION     VARCHAR2(400 BYTE),
+  CODUSU          VARCHAR2(30 BYTE)             DEFAULT user                  NOT NULL,
+  FECUSU          DATE                          DEFAULT SYSDATE               NOT NULL,
+  FLGSOL          NUMBER(1)                     DEFAULT 0,
+  CANINS          NUMBER(8,2),
+  ID_SOL          NUMBER,
+  FLGREQ          NUMBER(1),
+  CODFAS          NUMBER(8),
+  CODUSUDIS       VARCHAR2(30 BYTE),
+  PEP_INVERSION   VARCHAR2(40 BYTE),
+  NRO_RES         NUMBER,
+  CANAUD          NUMBER(8,2)                   DEFAULT 0,
+  COSAUD          NUMBER(10,2)                  DEFAULT 0,
+  FLG_SPGENERADO  NUMBER                        DEFAULT 0,
+  FLG_DEPURAR     NUMBER                        DEFAULT 1,
+  CENTROSAP       VARCHAR2(4 BYTE),
+  ALMACENSAP      VARCHAR2(4 BYTE),
+  FLG_DESPACHO    NUMBER                        DEFAULT 0,
+  FECGENRESERVA   DATE,
+  USUGENRESERVA   VARCHAR2(30 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTOETAMAT IS 'Listado de material por cada etapa del detalle de la solicitud';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.FLG_DESPACHO IS 'Indica si se realizo el despacho de esta linea de Material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.FECGENRESERVA IS 'Fecha que realiza la solicitud de materiales';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.USUGENRESERVA IS 'Codigo de Usuario que realiza la solicitud de materiales';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.PUNTO IS 'Punto de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.ORDEN IS 'Orden de la tabla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CODMAT IS 'Codigo de material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.IDMAT IS 'Llave primaria de la tabla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.MONEDA_ID IS 'Codigo de la moneda';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANDIS IS 'Cantidad en la fase de diseño del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.COSDIS IS 'Costo de diseño del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANINS_ATE IS 'Cantidad atendida del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANINS_SOL IS 'Cantidad devuelta del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANINS_DEV IS 'Cantidad devuelta del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANLIQ IS 'Cantidad en la fase de liquidacion del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.COSLIQ IS 'Costo de liquidación del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CONTRATA IS 'Indica si el material es entregado por el contratista';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.FLGSOL IS 'Indica si el material es solicitado';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANINS IS 'Cantidad en la fase de instalacion del material';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.CANAUD IS 'Cantidad en la fase de auditoría de la actividad';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.COSAUD IS 'Costo de auditoría de la actividad';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOETAMAT.FLG_SPGENERADO IS '0 = NO; 1 = En cola; 2= Error; 3 = Procesado';
+
+

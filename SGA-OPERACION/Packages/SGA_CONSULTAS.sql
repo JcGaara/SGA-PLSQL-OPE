@@ -1,0 +1,16 @@
+CREATE OR REPLACE PACKAGE OPERACION.SGA_CONSULTAS is
+
+TYPE CUR_PROCESO IS REF CURSOR;
+
+PROCEDURE SP_CONSULTA_FIJO_WEBPNP(P_LINEA IN VARCHAR2,
+                           P_FECINI  IN DATE,
+                           P_FECFIN  IN DATE,
+                           P_CURSOR OUT CUR_PROCESO);
+
+PROCEDURE CVWSSS_CONSULTA_DATOS(P_NUMSLC IN CHAR,
+                                P_CURSOR OUT SYS_REFCURSOR,
+                                P_COD_RESUL OUT NUMBER,
+                                P_MSG_RESUL OUT VARCHAR2);
+
+end SGA_CONSULTAS;
+/

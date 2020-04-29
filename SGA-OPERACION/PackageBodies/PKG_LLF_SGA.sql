@@ -1,0 +1,825 @@
+CREATE OR REPLACE PACKAGE BODY OPERACION.PKG_LLF_SGA AS
+  /*****************************************************************************************************
+    NAME:       PKG_LLF_SGA
+    PURPOSE:    Creacion y reutilizacion de objetos para realizar consulta de las lineas para
+                lineas que tienen que ser evaluadas para la liberacion en SGA.
+  
+    REVISIONS:
+    Ver        Date        Author           Solicitado por                  Description
+    ---------  ----------  ---------------  --------------                  ----------------------
+    1.0        01/02/2018  Jose Arriola     Carlos Lazarte                  version inicial
+  /*****************************************************************************************************/
+
+  PROCEDURE SGASS_LIBERACION_LINEAS_FIJAS(K_RESPUESTA  OUT VARCHAR2,
+                                          K_MENSAJE    OUT VARCHAR2,
+                                          K_CURSOR_MAS OUT SYS_REFCURSOR,
+                                          K_CURSOR_LIB OUT SYS_REFCURSOR) IS
+  
+    EX_ERROR EXCEPTION;
+    V_ESTADO_LIB NUMBER(2);
+    V_CODZONA    NUMBER;
+    V_TIPTRABAJO NUMBER;
+    V_COUNTER    NUMBER := 0;
+    V_RESP       VARCHAR2(5);
+    V_MSJ        VARCHAR2(30);
+    V_TECNOLOGIA OPERACION.SGAT_LIBERACIONES_TEMP.LTEMPV_TECNOLOGIA%TYPE;
+    V_LIMIT_BC   NUMBER := C_BCLIMIT;
+  V_MAX_DIAS   NUMBER;
+    BULK_ERRORS EXCEPTION;
+    TYPE T_NUMTEL IS TABLE OF OPERACION.SGAT_LIBERACIONES_TEMP.LTEMPV_NUMERO%type;
+    TYPE T_CODZONA IS TABLE OF TELEFONIA.SERIETEL.CODZONA%type;
+    TYPE T_CODNUMTEL IS TABLE OF TELEFONIA.RESERVATEL.CODNUMTEL%type;
+    L_NUMTEL    T_NUMTEL;
+    L_CODZONA   T_CODZONA;
+    L_CODNUMTEL T_CODNUMTEL;
+  V_FECULTEST DATE;
+  
+    CURSOR C_LIBERACION_LINEAS IS
+      SELECT N.NUMERO, N.CODNUMTEL, SE.CODZONA
+        FROM TELEFONIA.NUMTEL   N,
+             TELEFONIA.SERIETEL SE,
+             OPERACION.SOLOTPTO ST,
+             OPERACION.INSSRV   I
+       WHERE N.ESTNUMTEL = V_ESTADO_LIB
+         AND N.FLG_PORTABLE IS NULL
+         AND N.CODINSSRV = I.CODINSSRV
+         AND ST.CODINSSRV = I.CODINSSRV
+         AND I.ESTINSSRV = C_ESTINSSRV_CANCELADO
+         AND N.NUMERO BETWEEN SE.NUMINI AND SE.NUMFIN
+         AND N.CODINSSRV = ST.CODINSSRV
+         AND SE.CODZONA IN (SELECT O.CODIGON
+                              FROM OPERACION.OPEDD O
+                             WHERE O.TIPOPEDD = V_CODZONA)
+         AND EXISTS
+       (SELECT 1
+                FROM OPERACION.SOLOTPTO ST, OPERACION.SOLOT S
+               WHERE ST.CODINSSRV = N.CODINSSRV
+                 AND S.CODSOLOT = ST.CODSOLOT
+                 AND S.ESTSOL IN
+                     (C_ESTSOL_CERRADA, C_ESTSOL_ATENDIDA)
+                    AND S.TIPTRA IN (SELECT O.CODIGOC
+                     FROM OPERACION.OPEDD O
+                    WHERE O.TIPOPEDD = V_TIPTRABAJO
+                     AND O.ABREVIACION <> C_TIPTRA_DESC_LTE)
+                 AND ST.CODSOLOT =
+                     (SELECT MAX(CODSOLOT)
+                        FROM OPERACION.SOLOTPTO
+                       WHERE CODINSSRV = N.CODINSSRV
+                         AND CODSOLOT = S.CODSOLOT))
+       GROUP BY N.NUMERO, N.CODNUMTEL, SE.CODZONA
+       UNION ALL
+        SELECT N.NUMERO, N.CODNUMTEL, NULL
+        FROM TELEFONIA.NUMTEL   N,
+             OPERACION.SOLOTPTO ST,
+             OPERACION.INSSRV   I
+       WHERE N.ESTNUMTEL = V_ESTADO_LIB
+         AND N.FLG_PORTABLE IS NULL
+         AND N.CODINSSRV = ST.CODINSSRV
+         AND N.CODINSSRV = I.CODINSSRV
+         AND ST.CODINSSRV = I.CODINSSRV
+         AND I.ESTINSSRV = C_ESTINSSRV_CANCELADO
+         AND EXISTS
+       (SELECT 1
+                FROM OPERACION.SOLOTPTO ST, OPERACION.SOLOT S
+               WHERE ST.CODINSSRV = N.CODINSSRV
+                 AND S.CODSOLOT = ST.CODSOLOT
+                 AND S.ESTSOL IN
+                     (C_ESTSOL_CERRADA, C_ESTSOL_ATENDIDA)
+                    AND S.TIPTRA IN (SELECT O.CODIGOC
+                     FROM OPERACION.OPEDD O
+                    WHERE O.TIPOPEDD = V_TIPTRABAJO
+                     AND O.ABREVIACION = C_TIPTRA_DESC_LTE)
+                 AND ST.CODSOLOT =
+                     (SELECT MAX(CODSOLOT)
+                        FROM OPERACION.SOLOTPTO
+                       WHERE CODINSSRV = N.CODINSSRV
+                         AND CODSOLOT = S.CODSOLOT))
+       GROUP BY N.NUMERO, N.CODNUMTEL;    
+  BEGIN
+    K_RESPUESTA := 'OK';
+    K_MENSAJE   := 'OK';
+    
+     OPEN K_CURSOR_LIB FOR
+      SELECT NULL LTEMPV_NUMERO,
+             NULL LTEMPV_TECNOLOGIA,
+             NULL ESTADO,
+             NULL OBSERVACION
+        FROM DUAL WHERE 1=2;
+  
+    OPEN K_CURSOR_MAS FOR
+      SELECT NULL LTEMPV_NUMERO,
+             NULL LTEMPV_TECNOLOGIA,
+             NULL ESTADO,
+             NULL OBSERVACION
+        FROM DUAL WHERE 1=2;
+  
+    EXECUTE IMMEDIATE ('TRUNCATE TABLE OPERACION.SGAT_LIBERACIONES_TEMP');
+
+    BEGIN
+      SELECT O.CODIGON
+        INTO V_ESTADO_LIB
+        FROM OPERACION.OPEDD O
+       WHERE O.TIPOPEDD =
+             (SELECT T.TIPOPEDD
+                FROM OPERACION.TIPOPEDD T
+               WHERE T.ABREV = 'ESTADO_LIBERACION')
+         AND O.ABREVIACION = 'RES_SISTEMA';
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: ESTADO DE LIBERACION NO ESTA CONFIGURADO EN LA TABLA OPEDD';
+        RAISE EX_ERROR;
+    END;
+    BEGIN
+      SELECT T.TIPOPEDD
+        INTO V_CODZONA
+        FROM OPERACION.TIPOPEDD T
+       WHERE T.ABREV = C_CONFIG_OPEDD_TIPLIN;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: NO EXISTEN ZONAS CONFIGURADAS EN LA TABLA TIPOPEDD';
+        RAISE EX_ERROR;
+    END;
+    BEGIN
+      SELECT T.TIPOPEDD
+        INTO V_TIPTRABAJO
+        FROM OPERACION.TIPOPEDD T
+       WHERE T.ABREV = C_CONFIG_OPEDD_TIPTRA;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: NO EXISTEN TIPOS DE TRABAJOS CONFIGURADOS EN LA TABLA TIPOPEDD';
+        RAISE EX_ERROR;
+    END;
+ 
+  BEGIN
+        SELECT valor1 INTO V_MAX_DIAS
+                 FROM tim.tim_parametros@DBL_BSCS_BF
+                WHERE campo = 'LIBERA_LINEA';
+    EXCEPTION
+       WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: NO SE OBTUVIERON EL NUMERO MAXIMO DE DIAS VALIDACION HFC_CORP';
+        RAISE EX_ERROR;
+    END;
+
+ OPEN C_LIBERACION_LINEAS;
+    LOOP
+      FETCH C_LIBERACION_LINEAS BULK COLLECT
+        INTO L_NUMTEL, L_CODNUMTEL, L_CODZONA LIMIT V_LIMIT_BC;
+      EXIT WHEN L_NUMTEL.COUNT = 0;
+      BEGIN
+        FOR I IN L_NUMTEL.FIRST .. L_NUMTEL.LAST LOOP
+          V_TECNOLOGIA := SGAFUN_VALIDA_LINEA(L_CODZONA(I));
+        
+          IF V_TECNOLOGIA IS NULL THEN
+            GOTO CONTINUAR;
+          END IF;
+          --Valida linea
+          IF V_TECNOLOGIA IN (C_HFC_CORP) THEN
+      --CAMBIO 20/07/2018
+             SELECT FECULTEST
+             INTO V_FECULTEST
+               FROM OPERACION.SOLOT
+              WHERE CODSOLOT =
+                    (SELECT MAX(CODSOLOT)
+                       FROM OPERACION.SOLOTPTO A, TELEFONIA.NUMTEL B
+                      WHERE A.CODINSSRV = B.CODINSSRV
+                        AND B.NUMERO = L_NUMTEL(I));
+              
+            IF (TRUNC(SYSDATE) - TRUNC(V_FECULTEST)) >= V_MAX_DIAS THEN
+            -- Libera linea en SGA
+            SGASS_LIBERAR_SGA(L_NUMTEL(I), L_CODNUMTEL(I), V_RESP, V_MSJ);
+            --Si lo libero o no lo registramos en la temporal para el cursor
+            INSERT INTO OPERACION.SGAT_LIBERACIONES_TEMP
+              (LTEMPV_NUMERO,
+               LTEMPV_TECNOLOGIA,
+               LTEMPV_TIPOLIBERACION,
+               LTEMPV_ESTADO,
+               LTEMPV_OBSERVACION)
+            VALUES
+              (L_NUMTEL(I), V_TECNOLOGIA, 'LIBERADO', V_RESP, V_MSJ);
+          ELSIF V_TECNOLOGIA IN (C_TPI_MAS, C_HFC_MAS, C_LTE_MAS) THEN
+            INSERT INTO OPERACION.SGAT_LIBERACIONES_TEMP
+              (LTEMPV_NUMERO, LTEMPV_TECNOLOGIA, LTEMPV_TIPOLIBERACION)
+            VALUES
+              (L_NUMTEL(I), V_TECNOLOGIA, 'MASIVO');
+        ELSE
+      GOTO CONTINUAR;
+      END IF;
+      END IF;
+          <<CONTINUAR>>
+          V_COUNTER := V_COUNTER + 1;
+        END LOOP;
+      EXCEPTION
+        WHEN BULK_ERRORS THEN
+          K_RESPUESTA := C_ERR_OK;
+          K_MENSAJE   := 'ERROR: ' || SQLCODE || ' ' || SQLERRM || ' ' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      END;
+    END LOOP;
+    CLOSE C_LIBERACION_LINEAS;
+  
+    IF V_COUNTER = 0 THEN
+      K_MENSAJE := 'ERROR: NO SE PROCESO NINGUNA LIBERACION';
+      RAISE EX_ERROR;
+    END IF;
+  
+    CLOSE K_CURSOR_LIB;
+    CLOSE K_CURSOR_MAS;
+    
+    OPEN K_CURSOR_LIB FOR
+      SELECT LT.LTEMPV_NUMERO,
+             LT.LTEMPV_TECNOLOGIA,
+             DECODE(LTEMPV_ESTADO, C_ERR_ERROR, 'E', 'L') ESTADO,
+             LT.LTEMPV_OBSERVACION OBSERVACION
+        FROM OPERACION.SGAT_LIBERACIONES_TEMP LT
+       WHERE LT.LTEMPV_TIPOLIBERACION = 'LIBERADO';
+  
+    OPEN K_CURSOR_MAS FOR
+      SELECT LT.LTEMPV_NUMERO,
+             LT.LTEMPV_TECNOLOGIA,
+             DECODE(LTEMPV_ESTADO, C_ERR_ERROR, 'E', 'L') ESTADO,
+             LT.LTEMPV_OBSERVACION OBSERVACION
+        FROM OPERACION.SGAT_LIBERACIONES_TEMP LT
+       WHERE LT.LTEMPV_TIPOLIBERACION = 'MASIVO';
+  EXCEPTION
+    WHEN EX_ERROR THEN
+      K_RESPUESTA := C_ERR_OK;
+  END;
+
+  PROCEDURE SGASS_LIBERAR_SGA(K_NUMERO    NUMTEL.NUMERO%TYPE,
+                              K_CODNUMTEL TELEFONIA.RESERVATEL.CODNUMTEL%TYPE,
+                              K_RESPUESTA OUT VARCHAR2,
+                              K_MENSAJE   OUT VARCHAR2) IS
+    EX_ERROR EXCEPTION;
+    V_CODNUMTEL TELEFONIA.RESERVATEL.CODNUMTEL%TYPE := K_CODNUMTEL;
+  BEGIN
+    K_RESPUESTA := 'OK';
+    K_MENSAJE   := 'OK';
+  
+    IF V_CODNUMTEL IS NULL THEN
+      BEGIN
+        SELECT N.CODNUMTEL
+          INTO V_CODNUMTEL
+          FROM TELEFONIA.NUMTEL N
+         WHERE N.NUMERO = K_NUMERO;
+      EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+          K_MENSAJE := 'ERROR: CODNUMTEL NO EXISTE';
+          RAISE EX_ERROR;
+      END;
+    END IF;
+  
+    UPDATE TELEFONIA.NUMTEL N
+       SET N.ESTNUMTEL = C_OK,
+           N.CODINSSRV = NULL,
+           N.CODUSUASG = NULL,
+           N.FECASG    = NULL,
+           N.CODUSUMOD = C_CODUSUMOD
+     WHERE N.NUMERO = K_NUMERO;
+  
+    UPDATE TELEFONIA.RESERVATEL R
+       SET R.ESTNUMTEL = C_OK,
+           R.NUMSLC    = NULL,
+           R.CODCLI    = NULL,
+           R.CODUSURES = C_CODUSUMOD
+     WHERE R.CODNUMTEL = V_CODNUMTEL;
+  EXCEPTION
+    WHEN EX_ERROR THEN
+      K_RESPUESTA := C_ERR_ERROR;
+    WHEN OTHERS THEN
+      K_RESPUESTA := C_ERR_ERROR;
+      K_MENSAJE   := 'ERROR: ' || SQLCODE || ' ' || SQLERRM || ' ' ||
+                     DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+    
+  END;
+
+PROCEDURE SGASS_LIBERAR_LINEAS_ANULASOT(K_RESPUESTA  OUT VARCHAR2,
+                                          K_MENSAJE    OUT VARCHAR2,
+                                          K_CURSOR_LIB OUT SYS_REFCURSOR) IS
+  
+    EX_ERROR EXCEPTION;
+    V_CODZONA                NUMBER;
+    V_COUNTER                NUMBER := 0;
+    V_RESP                   VARCHAR2(5);
+    V_MSJ                    VARCHAR2(30);
+    V_TIPTRABAJO NUMBER;
+    V_TECNOLOGIA             OPERACION.SGAT_LIBERACIONES_TEMP.LTEMPV_TECNOLOGIA%TYPE;
+    V_DIAS_CONFIG_ANULADAS   NUMBER;
+    V_DIAS_CONFIG_RECHAZADAS NUMBER;
+    V_LIMIT_BC               NUMBER := C_BCLIMIT;
+    BULK_ERRORS EXCEPTION;
+    TYPE T_NUMTEL IS TABLE OF OPERACION.SGAT_LIBERACIONES_TEMP.LTEMPV_NUMERO%type;
+    TYPE T_CODNUMTEL IS TABLE OF TELEFONIA.RESERVATEL.CODNUMTEL%type;
+    TYPE T_CODZONA IS TABLE OF TELEFONIA.SERIETEL.CODZONA%type;
+
+    L_NUMTEL    T_NUMTEL;
+    L_CODZONA   T_CODZONA;
+    L_CODNUMTEL T_CODNUMTEL;
+  
+    CURSOR C_LIBERACION_LINEAS IS
+      SELECT N.NUMERO, N.CODNUMTEL, SE.CODZONA
+        FROM TELEFONIA.NUMTEL   N,
+             OPERACION.SOLOTPTO ST,
+             OPERACION.INSSRV   I,
+             TELEFONIA.SERIETEL SE
+       WHERE N.ESTNUMTEL = C_ESTNUMTEL_ASIGN --ESTADO ASIGNADO
+         AND N.CODINSSRV = I.CODINSSRV
+         AND I.ESTINSSRV = C_ESTINSSRV_SINACTIV --ESTADO SIN ACTIVAR
+         AND N.FLG_PORTABLE IS NULL
+         AND N.CODINSSRV = ST.CODINSSRV
+         AND N.NUMERO BETWEEN SE.NUMINI AND SE.NUMFIN
+         AND SE.CODZONA IN (SELECT O.CODIGON
+                              FROM OPERACION.OPEDD O
+                             WHERE O.TIPOPEDD = V_CODZONA)
+         AND EXISTS
+       (SELECT 1
+                FROM OPERACION.SOLOTPTO STT, OPERACION.SOLOT S
+               WHERE STT.CODINSSRV = N.CODINSSRV
+                 AND S.CODSOLOT = STT.CODSOLOT
+                 AND S.CODSOLOT = ST.CODSOLOT
+                 AND STT.CODSOLOT =
+                     (SELECT MAX(CODSOLOT)
+                        FROM OPERACION.SOLOTPTO
+                       WHERE CODINSSRV = N.CODINSSRV
+                         AND CODSOLOT = S.CODSOLOT)
+                 AND S.ESTSOL IN (C_ESTSOL_ANULADA, C_ESTSOL_RECHAZADA) --ESTADOS:ANULADO,RECHAZADO
+         AND TRUNC(S.FECULTEST)
+                 BETWEEN DECODE(S.ESTSOL,
+                                         C_ESTSOL_ANULADA,
+                                         TRUNC(SYSDATE) - V_DIAS_CONFIG_ANULADAS,
+                                         C_ESTSOL_RECHAZADA,
+                                         TRUNC(SYSDATE) - V_DIAS_CONFIG_RECHAZADAS) AND TRUNC(SYSDATE)
+
+              )
+       GROUP BY N.NUMERO, N.CODNUMTEL, SE.CODZONA
+       UNION ALL       
+       SELECT N.NUMERO, N.CODNUMTEL, NULL
+        FROM TELEFONIA.NUMTEL   N,
+             OPERACION.SOLOTPTO ST,
+             OPERACION.INSSRV   I
+       WHERE N.ESTNUMTEL = C_ESTNUMTEL_ASIGN --ESTADO ASIGNADO
+         AND N.CODINSSRV = I.CODINSSRV
+         AND I.ESTINSSRV = C_ESTINSSRV_SINACTIV --ESTADO SIN ACTIVAR
+         AND N.FLG_PORTABLE IS NULL
+         AND N.CODINSSRV = ST.CODINSSRV
+         AND EXISTS
+       (SELECT 1
+                FROM OPERACION.SOLOTPTO STT, OPERACION.SOLOT S
+               WHERE STT.CODINSSRV = N.CODINSSRV
+                 AND S.CODSOLOT = STT.CODSOLOT
+                 AND S.CODSOLOT = ST.CODSOLOT
+                 AND S.TIPTRA IN (SELECT O.CODIGOC
+                     FROM OPERACION.OPEDD O
+                    WHERE O.TIPOPEDD = V_TIPTRABAJO
+                     AND O.ABREVIACION = C_TIPTRA_DESC_LTE)
+                 AND STT.CODSOLOT =
+                     (SELECT MAX(CODSOLOT)
+                        FROM OPERACION.SOLOTPTO
+                       WHERE CODINSSRV = N.CODINSSRV
+                         AND CODSOLOT = S.CODSOLOT)
+                 AND S.ESTSOL IN (C_ESTSOL_ANULADA, C_ESTSOL_RECHAZADA) --ESTADOS:ANULADO,RECHAZADO
+         AND TRUNC(S.FECULTEST)
+                 BETWEEN DECODE(S.ESTSOL,
+                                         C_ESTSOL_ANULADA,
+                                         TRUNC(SYSDATE) - V_DIAS_CONFIG_ANULADAS,
+                                         C_ESTSOL_RECHAZADA,
+                                         TRUNC(SYSDATE) - V_DIAS_CONFIG_RECHAZADAS) AND TRUNC(SYSDATE)
+              )
+       GROUP BY N.NUMERO, N.CODNUMTEL;
+  BEGIN
+   OPEN K_CURSOR_LIB FOR
+      SELECT NULL LTEMPV_NUMERO,
+             NULL LTEMPV_TECNOLOGIA,
+             NULL ESTADO,
+             NULL OBSERVACION
+        FROM DUAL WHERE 1=2;  
+  
+    K_RESPUESTA := 'OK';
+    K_MENSAJE   := 'OK';
+  
+    EXECUTE IMMEDIATE ('TRUNCATE TABLE OPERACION.SGAT_LIBERACIONES_TEMP');
+  
+    BEGIN
+      SELECT T.TIPOPEDD
+        INTO V_CODZONA
+        FROM OPERACION.TIPOPEDD T
+       WHERE T.ABREV = C_CONFIG_OPEDD_TIPLIN;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: NO EXISTEN ZONAS CONFIGURADAS EN LA TABLA TIPOPEDD';
+        RAISE EX_ERROR;
+    END;
+  
+  BEGIN
+      SELECT O.CODIGON
+        INTO V_DIAS_CONFIG_ANULADAS
+        FROM OPERACION.OPEDD O
+       WHERE O.TIPOPEDD =
+             (SELECT T.TIPOPEDD
+                FROM OPERACION.TIPOPEDD T
+               WHERE T.ABREV = 'DIAS_CONFIG_LIBERACION')
+         AND O.ABREVIACION = 'SOT_ANULADA';
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: CANTIDAD DE DIAS PARA SOT ANULADA NO ESTA CONFIGURADO EN LA TABLA OPEDD';
+        RAISE EX_ERROR;
+    END;
+  
+  
+  BEGIN
+      SELECT O.CODIGON
+        INTO V_DIAS_CONFIG_RECHAZADAS
+        FROM OPERACION.OPEDD O
+       WHERE O.TIPOPEDD =
+             (SELECT T.TIPOPEDD
+                FROM OPERACION.TIPOPEDD T
+               WHERE T.ABREV = 'DIAS_CONFIG_LIBERACION')
+         AND O.ABREVIACION = 'SOT_RECHAZADA';
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: CANTIDAD DE DIAS PARA SOT RECHAZADA NO ESTA CONFIGURADO EN LA TABLA OPEDD';
+        RAISE EX_ERROR;
+    END;
+    
+    BEGIN
+      SELECT T.TIPOPEDD
+        INTO V_TIPTRABAJO
+        FROM OPERACION.TIPOPEDD T
+       WHERE T.ABREV = C_CONFIG_OPEDD_TIPTRA;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        K_MENSAJE := 'ERROR: NO EXISTEN TIPOS DE TRABAJOS CONFIGURADOS EN LA TABLA TIPOPEDD';
+        RAISE EX_ERROR;
+    END;    
+  
+    OPEN C_LIBERACION_LINEAS;
+    LOOP
+      FETCH C_LIBERACION_LINEAS BULK COLLECT
+        INTO L_NUMTEL, L_CODNUMTEL, L_CODZONA LIMIT V_LIMIT_BC;
+      EXIT WHEN L_NUMTEL.COUNT = 0;
+      BEGIN
+        FOR I IN L_NUMTEL.FIRST .. L_NUMTEL.LAST LOOP
+          V_TECNOLOGIA := SGAFUN_VALIDA_LINEA(L_CODZONA(I));
+     
+          IF V_TECNOLOGIA IS NULL THEN
+            GOTO CONTINUAR;
+          END IF;
+          --Valida linea
+          IF V_TECNOLOGIA IN (C_HFC_CORP, C_TPI_MAS, C_HFC_MAS, C_LTE_MAS) THEN
+            -- Libera linea en SGA
+            SGASS_LIBERAR_SGA(L_NUMTEL(I), L_CODNUMTEL(I), V_RESP, V_MSJ);
+            --Si lo libero o no lo registramos en la temporal para el cursor
+            INSERT INTO OPERACION.SGAT_LIBERACIONES_TEMP
+              (LTEMPV_NUMERO,
+               LTEMPV_TECNOLOGIA,
+               LTEMPV_TIPOLIBERACION,
+               LTEMPV_ESTADO,
+               LTEMPV_OBSERVACION)
+            VALUES
+              (L_NUMTEL(I), V_TECNOLOGIA, 'ANULASOT', V_RESP, V_MSJ);
+          END IF;
+          <<CONTINUAR>>
+          V_COUNTER := V_COUNTER + 1;
+        END LOOP;
+      EXCEPTION
+        WHEN BULK_ERRORS THEN
+          K_RESPUESTA := C_ERR_ERROR;
+          K_MENSAJE   := 'ERROR: ' || SQLCODE || ' ' || SQLERRM || ' ' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      END;
+    END LOOP;
+  
+    IF V_COUNTER = 0 THEN
+      K_MENSAJE := 'ERROR: NO SE PROCESO NINGUNA LIBERACION';
+      RAISE EX_ERROR;
+    END IF;
+  
+    CLOSE K_CURSOR_LIB;
+    OPEN K_CURSOR_LIB FOR
+      SELECT LT.LTEMPV_NUMERO,
+             LT.LTEMPV_TECNOLOGIA,
+             DECODE(LTEMPV_ESTADO, C_ERR_ERROR, 'E', 'L') ESTADO,
+             LT.LTEMPV_OBSERVACION OBSERVACION
+        FROM OPERACION.SGAT_LIBERACIONES_TEMP LT
+       WHERE LT.LTEMPV_TIPOLIBERACION = 'ANULASOT';
+  
+  EXCEPTION
+    WHEN EX_ERROR THEN
+      K_RESPUESTA := C_ERR_ERROR;
+  END;
+
+  PROCEDURE SGASS_LIBERA_CAMBIONUMERO_HFC(K_RESPUESTA  OUT VARCHAR2,
+                                          K_MENSAJE    OUT VARCHAR2,
+                                          K_CURSOR_LIB OUT SYS_REFCURSOR) IS
+    V_COUNTER     NUMBER := 0;
+    V_ESTNUMTEL   NUMBER(2);
+    V_CODNUMTEL   TELEFONIA.RESERVATEL.CODNUMTEL%TYPE;
+    V_NUMERO      VARCHAR(50);
+    V_BSCS_STATUS CHAR(1);
+    V_RESP        VARCHAR2(5);
+    V_MSJ         VARCHAR2(30);
+    EX_ERROR EXCEPTION;
+  
+    CURSOR CUR_CAMBIONUM_HFC IS
+      SELECT SUT.TRAMN_CODSOLOT, SUT.TRAMV_TRAMA
+        FROM OPERACION.SOLOT ST, SALES.SIACT_UTIL_TRAMA SUT
+       WHERE ST.CODSOLOT = SUT.TRAMN_CODSOLOT
+         AND SGAFUN_GET_PARAMETER('TIPO_NUMERO:', SUT.TRAMV_TRAMA) =
+             C_VAR_HFC
+         AND ST.ESTSOL IN (C_ESTSOL_CERRADA, C_ESTSOL_ATENDIDA)
+         AND ST.TIPTRA = C_TIPTRA_CAMBNUM_HFC;
+  BEGIN
+    
+    OPEN K_CURSOR_LIB FOR
+      SELECT null LTEMPV_NUMERO,
+             null LTEMPV_TECNOLOGIA,
+             null ESTADO,
+             null OBSERVACION
+        FROM dual where 1=2;
+  
+    K_RESPUESTA := 'OK';
+    K_MENSAJE   := 'OK';
+  
+    EXECUTE IMMEDIATE ('TRUNCATE TABLE OPERACION.SGAT_LIBERACIONES_TEMP');
+  
+    FOR I IN CUR_CAMBIONUM_HFC LOOP
+    
+      -- obtener el telefono antiguo de cambio de numero
+      V_NUMERO := SGAFUN_GET_PARAMETER(C_TRAMA_NRO_TLFN, I.TRAMV_TRAMA);
+      --Verificamos que la linea no haya sido liberada previamente y obtenemos el codnumtel
+      IF V_NUMERO IS NOT NULL THEN
+        BEGIN
+          SELECT N.CODNUMTEL, N.ESTNUMTEL
+            INTO V_CODNUMTEL, V_ESTNUMTEL
+            FROM TELEFONIA.NUMTEL N
+           WHERE N.ESTNUMTEL = C_RSRVDO_SSTMA
+             AND N.NUMERO = V_NUMERO;
+        EXCEPTION
+          WHEN NO_DATA_FOUND THEN
+            GOTO CONTINUAR;
+        END;
+      ELSE
+        GOTO CONTINUAR;
+      END IF;
+    
+      -- Validar si la trama contiene la transaccion de cambio de numero
+      IF SGAFUN_GET_PARAMETER(C_TRAMA_TIPOTRANS, I.TRAMV_TRAMA) <>
+         C_VAR_CAMBIONUMERO THEN
+        GOTO CONTINUAR;
+      END IF;
+    
+      --Se valida en BSCS que el numero tambien este liberado
+      BEGIN
+         SELECT A.DN_STATUS
+         INTO V_BSCS_STATUS
+         FROM SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   A,
+              SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF B,
+              SYSADM.CONTRACT_HISTORY@DBL_BSCS_BF   CH
+        WHERE A.DN_ID = B.DN_ID
+          AND B.CO_ID = CH.CO_ID
+          and ch.ch_seqno = (select max(h.ch_seqno)
+                               from sysadm.contract_history@DBL_BSCS_BF h
+                              where h.co_id = ch.co_id
+                                and h.ch_pending is null)
+          and ch.ch_status = 'd'
+          and trunc(sysdate) - trunc(ch.entdate) >=
+              (select valor1
+                 from tim.tim_parametros@DBL_BSCS_BF
+                where campo = 'LIBERA_LINEA')
+          AND B.CS_DEACTIV_DATE IS NULL
+          AND A.DN_NUM = V_NUMERO;
+      EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+          GOTO CONTINUAR;
+        WHEN TOO_MANY_ROWS THEN
+          SELECT D.DN_STATUS
+            INTO V_BSCS_STATUS
+            FROM SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF A,
+                 SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   D
+           WHERE A.CS_ACTIV_DATE =
+                 (SELECT MAX(B.CS_ACTIV_DATE)
+                    FROM SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF B,
+                         SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   C
+                   WHERE B.DN_ID = C.DN_ID
+                     AND C.DN_NUM = D.DN_NUM)
+             AND A.DN_ID = D.DN_ID
+             AND D.DN_NUM = V_NUMERO;
+      END;
+    
+      IF V_BSCS_STATUS = C_BSCS_RESERVADO AND C_RSRVDO_SSTMA=V_ESTNUMTEL THEN
+         -- Libera linea en SGA
+         SGASS_LIBERAR_SGA(V_NUMERO, V_CODNUMTEL, V_RESP, V_MSJ);
+         --Si lo libero correctamente procedemos a generar archivo
+         INSERT INTO OPERACION.SGAT_LIBERACIONES_TEMP
+          (LTEMPV_NUMERO,
+           LTEMPV_TECNOLOGIA,
+           LTEMPV_TIPOLIBERACION,
+           LTEMPV_ESTADO,
+           LTEMPV_OBSERVACION)
+         VALUES
+          (V_NUMERO, C_VAR_HFC, 'CAMBIONUMERO_HFC', V_RESP, V_MSJ);
+      END IF;
+    
+      <<CONTINUAR>>
+      V_COUNTER := V_COUNTER + 1;
+    END LOOP;
+    IF V_COUNTER = 0 THEN
+      K_MENSAJE := 'ERROR: NO SE PROCESO NINGUNA LIBERACION';
+      RAISE EX_ERROR;
+    END IF;
+  
+    CLOSE K_CURSOR_LIB;
+    OPEN K_CURSOR_LIB FOR
+      SELECT LT.LTEMPV_NUMERO,
+             LT.LTEMPV_TECNOLOGIA,
+             DECODE(LTEMPV_ESTADO, C_ERR_ERROR, 'E', 'L') ESTADO,
+             LT.LTEMPV_OBSERVACION OBSERVACION
+        FROM OPERACION.SGAT_LIBERACIONES_TEMP LT
+       WHERE LT.LTEMPV_TIPOLIBERACION = 'CAMBIONUMERO_HFC';
+  
+  EXCEPTION
+    WHEN EX_ERROR THEN
+      K_RESPUESTA := C_ERR_OK;
+  END;
+
+  PROCEDURE SGASS_LIBERA_CAMBIONUMERO_LTE(K_RESPUESTA  OUT VARCHAR2,
+                                          K_MENSAJE    OUT VARCHAR2,
+                                          K_CURSOR_LIB OUT SYS_REFCURSOR) IS
+    V_COUNTER     NUMBER := 0;
+    V_ESTNUMTEL   NUMBER(2);
+    V_CODNUMTEL   TELEFONIA.RESERVATEL.CODNUMTEL%TYPE;
+    V_NUMERO      VARCHAR(50);
+    V_BSCS_STATUS CHAR(1);
+    V_RESP        VARCHAR2(5);
+    V_MSJ         VARCHAR2(30);
+    EX_ERROR EXCEPTION;
+  
+    CURSOR CUR_CAMBIONUM_LTE IS
+      SELECT SUT.TRAMN_CODSOLOT, SUT.TRAMV_TRAMA
+        FROM OPERACION.SOLOT ST, SALES.SIACT_UTIL_TRAMA SUT
+       WHERE ST.CODSOLOT = SUT.TRAMN_CODSOLOT
+         AND SGAFUN_GET_PARAMETER('TIPO_NUMERO:', SUT.TRAMV_TRAMA) =
+             C_VAR_LTE
+         AND ST.ESTSOL IN (C_ESTSOL_CERRADA, C_ESTSOL_ATENDIDA)
+         AND ST.TIPTRA = C_TIPTRA_CAMBNUM_LTE;
+  BEGIN
+    OPEN K_CURSOR_LIB FOR
+      SELECT NULL LTEMPV_NUMERO,
+             NULL LTEMPV_TECNOLOGIA,
+             NULL ESTADO,
+             NULL OBSERVACION
+        FROM DUAL where 1=2;
+    K_RESPUESTA := 'OK';
+    K_MENSAJE   := 'OK';
+  
+    EXECUTE IMMEDIATE ('TRUNCATE TABLE OPERACION.SGAT_LIBERACIONES_TEMP');
+  
+    FOR I IN CUR_CAMBIONUM_LTE LOOP
+      -- obtener el telefono antiguo de cambio de numero
+      V_NUMERO := OPERACION.PKG_SIAC_POSTVENTA.SIACFUN_GET_PARAMETER(C_TRAMA_NRO_TLFN,
+                                                                     I.TRAMV_TRAMA);
+      IF V_NUMERO IS NOT NULL THEN
+        --Verificamos que la linea no haya sido liberada previamente
+        BEGIN
+          SELECT N.CODNUMTEL, N.ESTNUMTEL
+            INTO V_CODNUMTEL, V_ESTNUMTEL
+            FROM TELEFONIA.NUMTEL N
+           WHERE N.ESTNUMTEL = C_RSRVDO_SSTMA
+             AND N.NUMERO = V_NUMERO;
+        EXCEPTION
+          WHEN NO_DATA_FOUND THEN
+            GOTO CONTINUAR;
+        END;
+      ELSE
+        GOTO CONTINUAR;
+      END IF;
+      -- Validar si la trama contiene la transaccion de cambio de numero
+      IF SGAFUN_GET_PARAMETER(C_TRAMA_TIPOTRANS, I.TRAMV_TRAMA) <>
+         C_VAR_CAMBIONUMERO THEN
+        GOTO CONTINUAR;
+      END IF;
+    
+      --Se valida en BSCS que el numero tambien este liberado
+      BEGIN
+       SELECT A.DN_STATUS
+         INTO V_BSCS_STATUS
+         FROM SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   A,
+              SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF B,
+              SYSADM.CONTRACT_HISTORY@DBL_BSCS_BF   CH
+        WHERE A.DN_ID = B.DN_ID
+          AND B.CO_ID = CH.CO_ID
+          and ch.ch_seqno = (select max(h.ch_seqno)
+                               from sysadm.contract_history@DBL_BSCS_BF h
+                              where h.co_id = ch.co_id
+                                and h.ch_pending is null)
+          and ch.ch_status = 'd'
+          and trunc(sysdate) - trunc(ch.entdate) >=
+              (select valor1
+                 from tim.tim_parametros@DBL_BSCS_BF
+                where campo = 'LIBERA_LINEA')
+          AND B.CS_DEACTIV_DATE IS NULL
+          AND A.DN_NUM = V_NUMERO;  
+
+      EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+          GOTO CONTINUAR;
+        WHEN TOO_MANY_ROWS THEN
+          SELECT D.DN_STATUS
+            INTO V_BSCS_STATUS
+            FROM SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF A,
+                 SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   D
+           WHERE A.CS_ACTIV_DATE =
+                 (SELECT MAX(B.CS_ACTIV_DATE)
+                    FROM SYSADM.CONTR_SERVICES_CAP@DBL_BSCS_BF B,
+                         SYSADM.DIRECTORY_NUMBER@DBL_BSCS_BF   C
+                   WHERE B.DN_ID = C.DN_ID
+                     AND C.DN_NUM = D.DN_NUM)
+             AND A.DN_ID = D.DN_ID
+             AND D.DN_NUM = V_NUMERO;
+      END;
+    
+      IF V_BSCS_STATUS = C_BSCS_RESERVADO AND C_RSRVDO_SSTMA=V_ESTNUMTEL THEN
+        --Si lo libero correctamente procedemos a generar archivo
+        INSERT INTO OPERACION.SGAT_LIBERACIONES_TEMP
+        (LTEMPV_NUMERO,
+         LTEMPV_TECNOLOGIA,
+         LTEMPV_TIPOLIBERACION,
+         LTEMPV_ESTADO,
+         LTEMPV_OBSERVACION)
+        VALUES
+        (V_NUMERO, C_VAR_LTE, 'CAMBIONUMERO_LTE', V_RESP, V_MSJ);
+     END IF;
+    
+      <<CONTINUAR>>
+      V_COUNTER := V_COUNTER + 1;
+    END LOOP;
+    IF V_COUNTER = 0 THEN
+      K_MENSAJE := 'ERROR: NO SE PROCESO NINGUNA LIBERACION';
+      RAISE EX_ERROR;
+    END IF;
+  
+    CLOSE K_CURSOR_LIB;
+    OPEN K_CURSOR_LIB FOR
+      SELECT LT.LTEMPV_NUMERO,
+             LT.LTEMPV_TECNOLOGIA,
+             DECODE(LTEMPV_ESTADO, C_ERR_ERROR, 'E', 'L') ESTADO,
+             LT.LTEMPV_OBSERVACION OBSERVACION
+        FROM OPERACION.SGAT_LIBERACIONES_TEMP LT
+       WHERE LT.LTEMPV_TIPOLIBERACION = 'CAMBIONUMERO_LTE';
+  
+  EXCEPTION
+    WHEN EX_ERROR THEN
+      K_RESPUESTA := C_ERR_OK;
+  END;
+
+  FUNCTION SGAFUN_VALIDA_LINEA(P_CODZONA TELEFONIA.SERIETEL.CODZONA%TYPE)
+    RETURN VARCHAR2 IS
+    LV_CODZONA VARCHAR2(50);
+  BEGIN
+    SELECT O.CODIGOC
+      INTO LV_CODZONA
+      FROM OPERACION.OPEDD O
+     WHERE O.TIPOPEDD = (SELECT TIPOPEDD
+                           FROM TIPOPEDD
+                          WHERE ABREV = C_CONFIG_OPEDD_TIPLIN)
+       AND O.CODIGON = P_CODZONA;
+    RETURN LV_CODZONA;
+  EXCEPTION
+    WHEN TOO_MANY_ROWS THEN
+      SELECT O.CODIGOC
+        INTO LV_CODZONA
+        FROM OPERACION.OPEDD O
+       WHERE O.TIPOPEDD =
+             (SELECT TIPOPEDD
+                FROM OPERACION.TIPOPEDD
+               WHERE ABREV = C_CONFIG_OPEDD_TIPLIN)
+         AND O.CODIGON = P_CODZONA
+         AND ROWNUM = 1;
+      RETURN LV_CODZONA;
+    WHEN NO_DATA_FOUND THEN
+      RETURN C_LTE_MAS;
+  END;
+
+  FUNCTION SGAFUN_GET_PARAMETER(K_CAMPO VARCHAR2, K_TRAMA VARCHAR2)
+    RETURN VARCHAR2 IS
+    V_TRAMA2 VARCHAR2(4000);
+    V_VALUE  VARCHAR2(100);
+  BEGIN
+    IF SUBSTR(K_CAMPO, LENGTH(K_CAMPO)) = ':' AND
+       INSTR(K_TRAMA, K_CAMPO) > 0 THEN
+    
+      SELECT SUBSTR(K_TRAMA, INSTR(K_TRAMA, K_CAMPO) + LENGTH(K_CAMPO))
+        INTO V_TRAMA2
+        FROM DUAL;
+    
+      SELECT SUBSTR(K_TRAMA,
+                    INSTR(K_TRAMA, K_CAMPO) + LENGTH(K_CAMPO),
+                    INSTR(V_TRAMA2, '|') - 1)
+        INTO V_VALUE
+        FROM DUAL;
+    ELSE
+      V_VALUE := NULL;
+    END IF;
+    RETURN V_VALUE;
+  END;
+END PKG_LLF_SGA;
+/

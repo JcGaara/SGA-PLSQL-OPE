@@ -1,0 +1,12 @@
+CREATE TABLE OPERACION.TIPEQUDTH
+(
+  IDSEC        NUMBER(10),
+  GRUPOEQU     NUMBER(5),
+  TIPEQUOPE    NUMBER(6),
+  CODEQUCOM    CHAR(4 BYTE),
+  DESCRIPCION  VARCHAR2(100 BYTE),
+  CODUSU       VARCHAR2(32 BYTE)                DEFAULT user,
+  FECUSU       DATE                             DEFAULT sysdate
+);
+
+

@@ -1,0 +1,16 @@
+CREATE TABLE OPERACION.GRPTIPEQU
+(
+  GRPTIPEQU    NUMBER(2)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(100 BYTE)               NOT NULL,
+  CLASE        VARCHAR2(30 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.GRPTIPEQU IS 'Listado los grupos de los tipos de equipo';
+
+COMMENT ON COLUMN OPERACION.GRPTIPEQU.GRPTIPEQU IS 'Tipo de grupo del equipo';
+
+COMMENT ON COLUMN OPERACION.GRPTIPEQU.DESCRIPCION IS 'Descripcion del grupo de los tipo de equipo';
+
+COMMENT ON COLUMN OPERACION.GRPTIPEQU.CLASE IS 'Clasificacion';
+
+

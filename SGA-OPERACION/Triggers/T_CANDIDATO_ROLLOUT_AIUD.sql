@@ -1,0 +1,34 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_CANDIDATO_ROLLOUT_AIUD
+AFTER INSERT OR UPDATE OR DELETE
+ON OPERACION.CANDIDATO_ROLLOUT REFERENCING OLD AS OLD NEW AS NEW
+FOR EACH ROW
+ /**************************************************************************
+   NOMBRE:     T_CANDIDATO_ROLLOUT_AIUD
+   PROPOSITO:  Genera log de Candidato
+   REVISIONES:
+   Ver        Fecha        Autor            Descripcion
+   ---------  ----------  ---------------   ------------------------
+   1.0        06/02/2014  Edilberto Astulle	PROY-12517 IDEA-15929 Implantacion de Proyectos SGA
+   **************************************************************************/
+
+DECLARE
+BEGIN
+  IF INSERTING THEN
+     INSERT INTO HISTORICO.CANDIDATO_ROLLOUT_LOG
+       (idseq,CODSOLOT,DESCRIPCION,CONFORME,FECFIN,ACCION)
+     VALUES
+       (:NEW.idseq,:NEW.CODSOLOT,:NEW.DESCRIPCION,:NEW.CONFORME,:NEW.FECFIN,'I');
+  ELSIF UPDATING THEN
+     INSERT INTO HISTORICO.CANDIDATO_ROLLOUT_LOG
+       (idseq,CODSOLOT,DESCRIPCION,CONFORME,FECFIN,ACCION)
+     VALUES
+       (:NEW.idseq,:NEW.CODSOLOT,:NEW.DESCRIPCION,:NEW.CONFORME,:NEW.FECFIN,'U');
+
+  ELSIF DELETING THEN
+     INSERT INTO HISTORICO.CANDIDATO_ROLLOUT_LOG
+       (idseq,CODSOLOT,DESCRIPCION,CONFORME,FECFIN,ACCION)
+     VALUES
+       (:old.idseq,:OLD.CODSOLOT,:OLD.DESCRIPCION,:OLD.CONFORME,:OLD.FECFIN,'D');
+  END IF;
+END;
+/

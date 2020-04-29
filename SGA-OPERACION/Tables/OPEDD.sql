@@ -1,0 +1,28 @@
+CREATE TABLE OPERACION.OPEDD
+(
+  IDOPEDD      NUMBER(6)                        NOT NULL,
+  CODIGOC      VARCHAR2(30 BYTE),
+  CODIGON      NUMBER(10),
+  DESCRIPCION  VARCHAR2(100 BYTE),
+  ABREVIACION  VARCHAR2(30 BYTE),
+  TIPOPEDD     NUMBER(6)                        NOT NULL,
+  CODIGON_AUX  NUMBER(10)
+);
+
+COMMENT ON TABLE OPERACION.OPEDD IS 'Listado de los tipo usados en operaciones';
+
+COMMENT ON COLUMN OPERACION.OPEDD.IDOPEDD IS 'Llave primaria de la tabla';
+
+COMMENT ON COLUMN OPERACION.OPEDD.CODIGOC IS 'Codigo en formato string';
+
+COMMENT ON COLUMN OPERACION.OPEDD.CODIGON IS 'Codigo en formato numerico';
+
+COMMENT ON COLUMN OPERACION.OPEDD.DESCRIPCION IS 'Descripcion de la clasificacion de los tipos de operaciones';
+
+COMMENT ON COLUMN OPERACION.OPEDD.ABREVIACION IS 'Abreviatura';
+
+COMMENT ON COLUMN OPERACION.OPEDD.TIPOPEDD IS 'Tipo de la clasificacion de operaciones';
+
+COMMENT ON COLUMN OPERACION.OPEDD.CODIGON_AUX IS 'Valor numerico auxiliar';
+
+

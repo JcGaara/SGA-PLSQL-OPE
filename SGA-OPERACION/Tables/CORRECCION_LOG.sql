@@ -1,0 +1,34 @@
+CREATE TABLE OPERACION.CORRECCION_LOG
+(
+  CODINSSRV  NUMBER(10)                         NOT NULL,
+  PID        NUMBER(10),
+  CODSRV     CHAR(4 BYTE),
+  TIPSRV     CHAR(4 BYTE),
+  CODSUC     CHAR(5 BYTE),
+  CODUBI     CHAR(10 BYTE),
+  FECUSU     DATE                               NOT NULL,
+  CODUSU     VARCHAR2(30 BYTE)                  NOT NULL,
+  IDLOG      NUMBER                             NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.CORRECCION_LOG IS 'Registra las actualizaciones del modulo de Corrección de información';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.CODINSSRV IS 'Numero de la instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.PID IS 'Numero de la instancia de producto';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.CODSRV IS 'Código de servicio';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.TIPSRV IS 'Familia de servicios.';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.CODSUC IS 'Código de la sucursal.';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.CODUBI IS 'Código del distrito.';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.FECUSU IS 'Fecha de registro.';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.CODUSU IS 'Código de Usuario registro.';
+
+COMMENT ON COLUMN OPERACION.CORRECCION_LOG.IDLOG IS 'Identificador de Log';
+
+

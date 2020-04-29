@@ -1,0 +1,4 @@
+ALTER TABLE OPERACION.INVENTARIO_ENVIO_ETA_ERR
+  ADD CONSTRAINT pk_inventario_envio_eta_err PRIMARY KEY (id_recurso_ext, fecha_inventariO)
+  USING INDEX 
+  TABLESPACE OPERACION_IDX;

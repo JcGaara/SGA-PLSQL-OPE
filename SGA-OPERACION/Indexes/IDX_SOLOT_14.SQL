@@ -1,0 +1,1 @@
+create index OPERACION.IDX_SOLOT_14 on OPERACION.SOLOT (FECUSU)  tablespace operacion_idx; 

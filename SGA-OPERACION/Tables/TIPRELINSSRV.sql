@@ -1,0 +1,19 @@
+CREATE TABLE OPERACION.TIPRELINSSRV
+(
+  CODTIPREL    NUMBER(2)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(50 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT USER                  NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.TIPRELINSSRV IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.TIPRELINSSRV.CODTIPREL IS 'Tipo de relación entre las instancias de servicio';
+
+COMMENT ON COLUMN OPERACION.TIPRELINSSRV.DESCRIPCION IS 'Descripcion del tipo de relacion de instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.TIPRELINSSRV.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.TIPRELINSSRV.FECUSU IS 'Fecha de registro';
+
+

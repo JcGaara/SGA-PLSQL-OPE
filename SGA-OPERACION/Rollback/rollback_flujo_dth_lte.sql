@@ -1,0 +1,20 @@
+----  Rollback
+DELETE FROM OPERACION.OPEDD
+ WHERE CODIGOC = 'DTH'
+   AND CODIGON = 485
+   AND tipopedd = (select t.tipopedd
+                     from tipopedd t
+                    where t.abrev = 'ESCXTIPTRAXTECNOLOGIA');
+
+DELETE FROM OPERACION.OPEDD
+ WHERE CODIGOC = 'LTE'
+   AND CODIGON = 744
+   AND tipopedd = (select t.tipopedd
+                     from tipopedd t
+                    where t.abrev = 'ESCXTIPTRAXTECNOLOGIA');
+
+
+REVOKE SELECT, INSERT, UPDATE, DELETE ON OPERACION.SGAT_CONTROL_APP FROM R_PROD;
+DROP SEQUENCE OPERACION.SGASEQ_SGAT_CONTROL_APP;
+DROP TRIGGER  OPERACION.SGATRI_SGAT_CONTROL_APP;
+DROP TABLE  OPERACION.SGAT_CONTROL_APP;

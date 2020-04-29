@@ -1,0 +1,62 @@
+-- Create table
+create table OPERACION.TAB_CONTRACT_BSCS_HISTORY
+(
+  TIPO_OPERA  VARCHAR2(3),
+  FECH_OPERA  DATE,
+  CUSTOMER_ID NUMBER,
+  CODSOLOT    NUMBER,
+  CO_ID       NUMBER not null,
+  CO_ID_OLD   NUMBER,
+  CODCLI      VARCHAR2(20),
+  NUMERO      VARCHAR2(20),
+  ESTSOL      NUMBER,
+  CICLO       VARCHAR2(10),
+  CODPLAN     NUMBER,
+  DN_NUM      VARCHAR2(20),
+  CODINSSRV   NUMBER,
+  CH_STATUS   VARCHAR2(20),
+  CH_PENDING  VARCHAR2(20),
+  ESTINSSRV   NUMBER,
+  FECULTEST   DATE,
+  FLG_UNICO   NUMBER,
+  DESCRIPCION VARCHAR2(4000),
+  OBSERVACION VARCHAR2(4000),
+  TRANSACCION VARCHAR2(4000),
+  NUM01       NUMBER,
+  NUM02       NUMBER,
+  NUM03       NUMBER,
+  NUM04       NUMBER,
+  NUM05       NUMBER,
+  NUM06       NUMBER,
+  NUM07       NUMBER,
+  NUM08       NUMBER,
+  NUM09       NUMBER,
+  NUM10       NUMBER,
+  VAR01       VARCHAR2(500),
+  VAR02       VARCHAR2(500),
+  VAR03       VARCHAR2(1000),
+  VAR04       VARCHAR2(1000),
+  VAR05       VARCHAR2(2000),
+  VAR06       VARCHAR2(2000),
+  VAR07       VARCHAR2(2000),
+  VAR08       VARCHAR2(4000),
+  VAR09       VARCHAR2(4000),
+  VAR10       VARCHAR2(4000),
+  VAR11       VARCHAR2(4000),
+  VAR12       VARCHAR2(4000),
+  CODUSU      VARCHAR2(25) default USER,
+  FECUSU      DATE default SYSDATE
+)
+tablespace OPERACION_DAT
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+

@@ -1,0 +1,1 @@
+drop index OPERACION.IX_TIPOPEDD_002;

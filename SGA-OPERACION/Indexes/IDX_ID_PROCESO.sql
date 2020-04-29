@@ -1,0 +1,1 @@
+create unique index operacion.idx_id_proceso on operacion.cab_rotacion_dth(id_proceso) tablespace OPERACION_IDX;

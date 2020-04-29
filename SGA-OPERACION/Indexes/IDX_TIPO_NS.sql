@@ -1,0 +1,1 @@
+create index operacion.idx_tipo_ns on operacion.tabequipo_material(tipo,numero_serie) tablespace OPERACION_IDX;

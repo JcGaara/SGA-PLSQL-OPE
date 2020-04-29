@@ -1,0 +1,32 @@
+DECLARE
+ LN_CANT NUMBER;
+ LN_COUNT NUMBER;
+
+BEGIN
+ SELECT COUNT(1)
+   INTO LN_CANT
+   FROM TIPOPEDD T, OPEDD O
+  WHERE T.TIPOPEDD = O.TIPOPEDD
+    AND T.ABREV = 'ASIG_IP/MASK_SGA'
+    AND O.ABREVIACION = 'IP_NO_ASIGNABLE';
+  
+  IF LN_CANT > 0 THEN 
+     delete from opedd where tipopedd = (select MAX(tipopedd) from tipopedd where upper(abrev) ='ASIG_IP/MASK_SGA')
+      AND ABREVIACION = 'IP_NO_ASIGNABLE';   
+    COMMIT;   
+  END IF;
+
+  SELECT COUNT(1)
+    INTO LN_COUNT
+    FROM OPERACION.OPEDD
+   WHERE ABREVIACION = 'Mascara_IP'
+     AND CODIGON IN (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 26, 27, 31, 32);
+
+  IF LN_COUNT > 0 THEN
+    DELETE FROM OPERACION.OPEDD
+     WHERE ABREVIACION = 'Mascara_IP'
+       AND CODIGON IN (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 26, 27, 31, 32);
+    COMMIT;
+  END IF;
+END;
+/

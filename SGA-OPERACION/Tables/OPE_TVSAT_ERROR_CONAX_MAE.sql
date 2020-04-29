@@ -1,0 +1,32 @@
+CREATE TABLE OPERACION.OPE_TVSAT_ERROR_CONAX_MAE
+(
+  IDERROR      NUMBER(2)                        NOT NULL,
+  CODIGO       VARCHAR2(20 BYTE)                NOT NULL,
+  DESCRIPCION  VARCHAR2(150 BYTE)               NOT NULL,
+  TIPO         NUMBER(2)                        NOT NULL,
+  FLG_ACTIVO   NUMBER(1)                        DEFAULT 1,
+  USUREG       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECREG       DATE                             DEFAULT sysdate,
+  USUMOD       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECMOD       DATE                             DEFAULT sysdate
+);
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.IDERROR IS 'Identificador del error';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.CODIGO IS 'Codigo de Error definido por CONAX';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.DESCRIPCION IS 'Descripción del Error';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.TIPO IS 'Tipo de Error. 1: Archivo, 2: Detalle';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.FLG_ACTIVO IS 'Estado. 1: Activo, 0: Inactivo';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.USUREG IS 'Usuario que realiza el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.FECREG IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.USUMOD IS 'Usuario que modifica el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_TVSAT_ERROR_CONAX_MAE.FECMOD IS 'Fecha de modificación del registro';
+
+

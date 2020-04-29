@@ -1,0 +1,2 @@
+-- Drop indexes 
+drop index OPERACION.IDX_AGENDACHGEST_IDAGENDA;

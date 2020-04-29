@@ -1,0 +1,12 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_OPE_CONCEPTO_ALQUILER_MAE_BU
+ BEFORE UPDATE ON operacion.OPE_CONCEPTO_ALQUILER_MAE
+FOR EACH ROW
+BEGIN
+   :new.usumod := user;
+   :new.fecmod := sysdate;
+
+END;
+/
+
+
+

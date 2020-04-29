@@ -1,0 +1,37 @@
+CREATE TABLE OPERACION.SOLOTPTO_POS
+(
+  CODSOLOT     NUMBER(8)                        NOT NULL,
+  PUNTO        NUMBER(10)                       NOT NULL,
+  ORDEN        NUMBER(3)                        NOT NULL,
+  TIPO         VARCHAR2(3 BYTE),
+  FECPOS       DATE,
+  MOTIVO       VARCHAR2(100 BYTE),
+  FECTEN       DATE,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECUSU       DATE                             DEFAULT sysdate,
+  OBSERVACION  VARCHAR2(4000 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTO_POS IS 'Postergaciones realizadas luego de cada programacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.PUNTO IS 'Punto de la solicitu de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.ORDEN IS 'Orden de la tabla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.TIPO IS 'Tipo de la postergación';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.FECPOS IS 'Fecha de postergacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.MOTIVO IS 'Motivo de la postergación';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.FECTEN IS 'Fecha tentativa';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_POS.OBSERVACION IS 'Observacion';
+
+

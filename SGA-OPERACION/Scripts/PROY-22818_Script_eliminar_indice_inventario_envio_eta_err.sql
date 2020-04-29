@@ -1,0 +1,2 @@
+ALTER TABLE operacion.inventario_envio_eta_err
+drop CONSTRAINT pk_inventario_envio_eta_err;

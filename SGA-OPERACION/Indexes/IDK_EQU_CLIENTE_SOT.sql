@@ -1,0 +1,3 @@
+-- Create/Recreate indexes 
+create index OPERACION.IDK_EQU_CLIENTE_SOT on OPERACION.OPE_EQU_IW (ID_CLIENTE, CODSOLOT);
+

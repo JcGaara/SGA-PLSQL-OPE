@@ -1,0 +1,1 @@
+drop procedure OPERACION.P_CIERRA_TAREA_CP_JANUS_CE;

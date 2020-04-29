@@ -1,0 +1,25 @@
+CREATE TABLE OPERACION.SOLOTXSOLOT
+(
+  CODSOLOT_P   NUMBER(8)                        NOT NULL,
+  CODSOLOT_H   NUMBER(8)                        NOT NULL,
+  TIPO         CHAR(1 BYTE)                     NOT NULL,
+  OBSERVACION  VARCHAR2(30 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.SOLOTXSOLOT IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.CODSOLOT_P IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.CODSOLOT_H IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.TIPO IS 'Tipo de relacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTXSOLOT.FECUSU IS 'Fecha de registro';
+
+

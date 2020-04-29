@@ -1,0 +1,141 @@
+CREATE TABLE OPERACION.SOLOT
+(
+  CODSOLOT          NUMBER(8)                   NOT NULL,
+  TIPTRA            NUMBER(4)                   NOT NULL,
+  ESTSOL            NUMBER(2)                   NOT NULL,
+  DOCID             NUMBER(10)                  NOT NULL,
+  TIPSRV            CHAR(4 BYTE),
+  FECAPR            DATE,
+  FECULTEST         DATE                        NOT NULL,
+  FECFIN            DATE,
+  OBSERVACION       VARCHAR2(4000 BYTE),
+  CODCLI            CHAR(8 BYTE),
+  NUMSLC            CHAR(10 BYTE),
+  DERIVADO          NUMBER(1)                   DEFAULT 0                     NOT NULL,
+  CODDPT            CHAR(6 BYTE),
+  FECUSU            DATE                        DEFAULT SYSDATE               NOT NULL,
+  CODUSU            VARCHAR2(30 BYTE)           DEFAULT user                  NOT NULL,
+  RECOSI            NUMBER(10),
+  CODMOTOT          NUMBER(3),
+  ESTASI            CHAR(1 BYTE),
+  ORIGEN            CHAR(1 BYTE),
+  CLIINT            CHAR(3 BYTE),
+  TIPREC            CHAR(1 BYTE),
+  NUMPSP            CHAR(10 BYTE),
+  IDOPC             CHAR(2 BYTE),
+  TIPCON            CHAR(2 BYTE),
+  PLAN              VARCHAR2(10 BYTE),
+  ESTSOLOPE         NUMBER(2),
+  FECCOM            DATE,
+  NUMPTAS           NUMBER(5),
+  FECINI            DATE,
+  PRYCON            VARCHAR2(20 BYTE),
+  AREASOL           NUMBER(4),
+  IDPRODUCTO        NUMBER(10),
+  FECUSU_OBS        DATE,
+  CODUSU_OBS        VARCHAR2(50 BYTE),
+  CODPREC           NUMBER(8),
+  GRADO             NUMBER(2)                   DEFAULT 1,
+  FECREP            DATE,
+  TRANSFERIDO_SAP   CHAR(1 BYTE),
+  SOTFACTURABLE     NUMBER(1),
+  FECREC            DATE,
+  USUARIORESP       VARCHAR2(30 BYTE),
+  USUARIOASIG       VARCHAR2(30 BYTE),
+  AREARESP          NUMBER(4),
+  DIRECCION         VARCHAR2(480 BYTE),
+  CODUBI            CHAR(10 BYTE),
+  ACTA_INSTALACION  VARCHAR2(20 BYTE),
+  CHARGING_AREA1    NUMBER(8),
+  CHARGING_AREA2    NUMBER(8),
+  CHARGING_AREA3    NUMBER(8),
+  FLG_PENALIDAD     NUMBER(1)                   DEFAULT 0
+);
+
+COMMENT ON TABLE OPERACION.SOLOT IS 'Solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOT.DIRECCION IS 'Dirección referencial';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODUBI IS 'Codigo del distrito referencial';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOT.TIPTRA IS 'Codigo del tipo de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOT.ESTSOL IS 'ESTSOL';
+
+COMMENT ON COLUMN OPERACION.SOLOT.DOCID IS 'id de documento';
+
+COMMENT ON COLUMN OPERACION.SOLOT.TIPSRV IS 'Codigo del tipo de servicio';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECAPR IS 'Fecha de aprobación';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECULTEST IS 'Fecha ultima de test';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECFIN IS 'Fecha de fin';
+
+COMMENT ON COLUMN OPERACION.SOLOT.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODCLI IS 'Codigo del cliente';
+
+COMMENT ON COLUMN OPERACION.SOLOT.NUMSLC IS 'Numero de proyecto';
+
+COMMENT ON COLUMN OPERACION.SOLOT.DERIVADO IS 'Indica si la solot se ha derivado';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODDPT IS 'Codigo del departamento (reemplazado por el codigo del area)';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOT.RECOSI IS 'Numero de ticket';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CODMOTOT IS 'Codigo de motivo de la orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOT.ESTASI IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.SOLOT.ORIGEN IS 'Origen';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CLIINT IS 'Codigo del cliente interno';
+
+COMMENT ON COLUMN OPERACION.SOLOT.TIPREC IS 'Tipo de rechazo';
+
+COMMENT ON COLUMN OPERACION.SOLOT.NUMPSP IS 'Numero del proyecto de venta';
+
+COMMENT ON COLUMN OPERACION.SOLOT.IDOPC IS 'Versión de la oferta comercial';
+
+COMMENT ON COLUMN OPERACION.SOLOT.TIPCON IS 'Tipo de contrato (Demo, Contrato)';
+
+COMMENT ON COLUMN OPERACION.SOLOT.PLAN IS 'Plan';
+
+COMMENT ON COLUMN OPERACION.SOLOT.ESTSOLOPE IS 'Estado de solicitud de operacion';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECCOM IS 'Fecha de compromiso';
+
+COMMENT ON COLUMN OPERACION.SOLOT.NUMPTAS IS 'Numero de puertas';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECINI IS 'Fecha de inicio';
+
+COMMENT ON COLUMN OPERACION.SOLOT.PRYCON IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.SOLOT.AREASOL IS 'Codigo de area que solicita la solot';
+
+COMMENT ON COLUMN OPERACION.SOLOT.IDPRODUCTO IS 'Identificador del producto';
+
+COMMENT ON COLUMN OPERACION.SOLOT.GRADO IS 'Grado de SOT: Licitacion,Normal,Prioridad';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECREP IS 'fecha de reprogramacion';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FECREC IS 'Fecha de reconexión a pedido del Cliente';
+
+COMMENT ON COLUMN OPERACION.SOLOT.ACTA_INSTALACION IS 'Número de Guía';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CHARGING_AREA1 IS 'Zona de Movilidad 1 asignada por CLARO';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CHARGING_AREA2 IS 'Zona de Movilidad 2 asignada por CLARO';
+
+COMMENT ON COLUMN OPERACION.SOLOT.CHARGING_AREA3 IS 'Zona de Movilidad 3 asignada por CLARO';
+
+COMMENT ON COLUMN OPERACION.SOLOT.FLG_PENALIDAD IS 'indica que la sot tiene una penalidad asociada';
+
+

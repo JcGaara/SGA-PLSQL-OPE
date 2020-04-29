@@ -1,0 +1,30 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_CLIENTEXCONTRATA_AIUD
+AFTER INSERT OR UPDATE OR DELETE
+ON OPERACION.CLIENTEXCONTRATA REFERENCING OLD AS OLD NEW AS NEW
+FOR EACH ROW
+ /**************************************************************************
+   NOMBRE:     T_CLIENTEXCONTRATA_AIUD
+   PROPOSITO:  Genera log de CLIENTE X CONTRATA
+
+   REVISIONES:
+   Ver        Fecha        Autor            Descripcion
+   ---------  ----------  ---------------   ------------------------
+   1.0       01/01/2014  Edilberto Astulle     SD-909038 Incidencia NO trae info Latitud y Longitud
+   **************************************************************************/
+DECLARE
+BEGIN
+  IF INSERTING THEN
+     INSERT INTO HISTORICO.CLIENTEXCONTRATA_LOG
+       (CODCON,CODCLI,TIPTRA,TIPO)
+     VALUES(:NEW.CODCON,:NEW.CODCLI,:NEW.TIPTRA,'I');
+  ELSIF UPDATING THEN
+     INSERT INTO HISTORICO.CLIENTEXCONTRATA_LOG
+     (CODCON,CODCLI,TIPTRA,TIPO)
+     VALUES(:NEW.CODCON,:NEW.CODCLI,:NEW.TIPTRA,'U');
+  ELSIF DELETING THEN
+     INSERT INTO HISTORICO.CLIENTEXCONTRATA_LOG
+     (CODCON,CODCLI,TIPTRA,TIPO)
+     VALUES (:OLD.CODCON,:OLD.CODCLI,:OLD.TIPTRA,'D');
+  END IF;
+END;
+/

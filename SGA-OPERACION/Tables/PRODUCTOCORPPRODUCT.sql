@@ -1,0 +1,11 @@
+CREATE TABLE OPERACION.PRODUCTOCORPPRODUCT
+(
+  CODPRD       NUMBER(5)                        NOT NULL,
+  IDPRODUCTO   NUMBER(10)                       NOT NULL,
+  CODUSU       VARCHAR2(50 BYTE)                DEFAULT USER,
+  FECUSU       DATE                             DEFAULT SYSDATE,
+  ESTADO       NUMBER(1),
+  DESCRIPCION  VARCHAR2(100 BYTE)
+);
+
+

@@ -1,0 +1,1 @@
+create index operacion.idx_codsolot_cbscs_lte on operacion.control_contrato_bscs_lte(codsolot) tablespace OPERACION_IDX;

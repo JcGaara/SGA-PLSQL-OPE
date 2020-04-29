@@ -1,0 +1,40 @@
+-- Create table
+create table OPERACION.OPE_TRANSACCIONES_DET
+(
+  IDTRANSACCION NUMBER not null,
+  IDPROCESO     NUMBER,
+  TRANSACCION   VARCHAR2(30),
+  ESTADO        NUMBER,
+  USUREG        VARCHAR2(30) default USER,
+  FECREG        DATE default SYSDATE,
+  USUMOD        VARCHAR2(30) default USER,
+  FECMOD        DATE default SYSDATE
+)
+tablespace OPERACION_DAT
+;
+-- Add comments to the table 
+comment on table OPERACION.OPE_TRANSACCIONES_DET
+  is 'TABLA DETALLE DE TRANSACCIONES';
+-- Add comments to the columns 
+comment on column OPERACION.OPE_TRANSACCIONES_DET.IDTRANSACCION
+  is 'ID TRANSACCION';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.IDPROCESO
+  is 'ID PROCESO';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.TRANSACCION
+  is 'TRANSACCION';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.ESTADO
+  is 'ESTADO';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.USUREG
+  is 'USUARIO DE REGISTRO';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.FECREG
+  is 'FECHA DE REGSITRO';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.USUMOD
+  is 'USUARIO DE MODIFICACION';
+comment on column OPERACION.OPE_TRANSACCIONES_DET.FECMOD
+  is 'FECHA DE MODIFICACION';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table OPERACION.OPE_TRANSACCIONES_DET
+  add constraint PK_OPE_TRANSACCIONES_DET primary key (IDTRANSACCION)
+  using index 
+  tablespace OPERACION_DAT
+;

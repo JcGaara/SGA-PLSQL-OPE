@@ -1,0 +1,31 @@
+DECLARE
+  LN_COUNT NUMBER;
+BEGIN
+
+  -- CONSTANTE TIPSRV 
+
+  SELECT COUNT(*)
+  INTO LN_COUNT
+    FROM OPERACION.CONSTANTE C
+   WHERE C.CONSTANTE = 'TELEF_REDCLARO';
+
+  IF LN_COUNT = 0 THEN
+    INSERT INTO OPERACION.CONSTANTE
+      (CONSTANTE, DESCRIPCION, TIPO, VALOR, OBS)
+    VALUES
+      ('TELEF_REDCLARO',
+       'Codigo de familia de red claro negocio',
+       'C',
+       (SELECT TIPSRV 
+          FROM SOLUCIONES
+         WHERE SOLUCION = 'RPV Claro Negocios'
+           AND IDSOLUCION IN
+               (SELECT MAX(IDSOLUCION)
+                  FROM SOLUCIONES
+                 WHERE SOLUCION = 'RPV Claro Negocios')),
+       NULL);
+    COMMIT;
+  END IF;
+
+END;
+/

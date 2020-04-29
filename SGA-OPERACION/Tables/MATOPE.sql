@@ -1,0 +1,50 @@
+CREATE TABLE OPERACION.MATOPE
+(
+  CODMAT       CHAR(15 BYTE)                    NOT NULL,
+  PRECIO       NUMBER(10,2)                     DEFAULT 0,
+  DESCRIPCION  VARCHAR2(200 BYTE),
+  COSTO        NUMBER(10,3)                     DEFAULT 0                     NOT NULL,
+  FECUSU       DATE                             DEFAULT sysdate,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user,
+  TIPO         NUMBER(1)                        DEFAULT 0,
+  COSTO_SIN    NUMBER(10,3),
+  MONEDA_ID    NUMBER(10)                       DEFAULT 2,
+  ABREV        VARCHAR2(30 BYTE),
+  CODUNI       CHAR(3 BYTE),
+  FLGMODCOS    NUMBER(1),
+  FLGCON       NUMBER(1)                        DEFAULT 0                     NOT NULL,
+  CAMPO1       VARCHAR2(30 BYTE),
+  COD_SAP      CHAR(18 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.MATOPE IS 'Materiales de operaciones';
+
+COMMENT ON COLUMN OPERACION.MATOPE.CODMAT IS 'Codigo de material';
+
+COMMENT ON COLUMN OPERACION.MATOPE.PRECIO IS 'Precio del material';
+
+COMMENT ON COLUMN OPERACION.MATOPE.DESCRIPCION IS 'Descripcion del material';
+
+COMMENT ON COLUMN OPERACION.MATOPE.COSTO IS 'Costo del mateial';
+
+COMMENT ON COLUMN OPERACION.MATOPE.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.MATOPE.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.MATOPE.TIPO IS 'Tipo';
+
+COMMENT ON COLUMN OPERACION.MATOPE.COSTO_SIN IS 'Costo siniestro del material';
+
+COMMENT ON COLUMN OPERACION.MATOPE.MONEDA_ID IS 'Codigo de la moneda';
+
+COMMENT ON COLUMN OPERACION.MATOPE.ABREV IS 'Abreviatura';
+
+COMMENT ON COLUMN OPERACION.MATOPE.CODUNI IS 'Codigo de la unidad';
+
+COMMENT ON COLUMN OPERACION.MATOPE.FLGMODCOS IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.MATOPE.FLGCON IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.MATOPE.CAMPO1 IS 'Observacion 1';
+
+

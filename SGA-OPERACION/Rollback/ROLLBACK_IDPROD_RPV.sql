@@ -1,0 +1,51 @@
+DECLARE
+  LN_COUNT NUMBER;
+BEGIN
+
+  -- CONSTANTE IDSOLUCION 236
+
+  SELECT COUNT(*)
+    INTO LN_COUNT
+    FROM OPERACION.CONSTANTE C
+   WHERE C.CONSTANTE = 'SOLUCION_RPV';
+
+  IF LN_COUNT > 0 THEN
+    DELETE FROM OPERACION.CONSTANTE C WHERE C.CONSTANTE = 'SOLUCION_RPV';
+    COMMIT;
+  END IF;
+
+  -- TIPO SRV 0098
+
+  SELECT COUNT(*)
+    INTO LN_COUNT
+    FROM TIPOPEDD T, OPEDD O
+   WHERE T.TIPOPEDD = O.TIPOPEDD
+     AND T.ABREV = 'I_S_APROB_SEF_TEMP'
+     AND O.CODIGOC = (select tipsrv from tystipsrv where dsctipsrv = 'Red Claro Negocios');
+
+  IF LN_COUNT > 0 THEN
+    DELETE FROM OPERACION.OPEDD
+     WHERE TIPOPEDD IN
+           (SELECT TIPOPEDD FROM TIPOPEDD WHERE ABREV = 'I_S_APROB_SEF_TEMP')
+       AND CODIGOC = (select tipsrv from tystipsrv where dsctipsrv = 'Red Claro Negocios');
+    COMMIT;
+  END IF;
+
+  -- ID PRODUCTO
+
+  SELECT COUNT(*)
+    INTO LN_COUNT
+    FROM TIPOPEDD T, OPEDD O
+   WHERE T.TIPOPEDD = O.TIPOPEDD
+     AND T.ABREV = 'IDPRODUCTOCONTINGENCIA'
+     AND O.CODIGON = (select idproducto from producto where descripcion = 'Red Claro Negocios - Acceso');
+
+  IF LN_COUNT > 0 THEN
+    DELETE FROM OPERACION.OPEDD O
+     WHERE O.TIPOPEDD IN
+           (SELECT TIPOPEDD FROM TIPOPEDD WHERE ABREV = 'IDPRODUCTOCONTINGENCIA')
+       AND O.CODIGON = (select idproducto from producto where descripcion = 'Red Claro Negocios - Acceso');
+    COMMIT;
+  END IF;
+END;
+/

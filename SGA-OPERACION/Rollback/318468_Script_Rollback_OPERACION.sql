@@ -1,0 +1,6 @@
+--Eliminar Objetos
+drop table OPERACION.TAB_CONTRACT_BSCS;
+drop table OPERACION.TAB_EQUIPOS_IW;
+drop table OPERACION.TAB_EQUIPOS_IW2;
+drop table OPERACION.JANUS_SOLOT_SEG;
+drop sequence OPERACION.SQ_EQU_IW;

@@ -1,0 +1,26 @@
+CREATE TABLE OPERACION.PERFIL_TRASLADO
+(
+  CODPERFIL  NUMBER                             NOT NULL,
+  NOMPERFIL  VARCHAR2(100 BYTE),
+  USUREG     VARCHAR2(30 BYTE)                  DEFAULT user,
+  FECREG     DATE                               DEFAULT sysdate,
+  USUMOD     VARCHAR2(30 BYTE)                  DEFAULT user                  NOT NULL,
+  FECMOD     DATE                               DEFAULT sysdate               NOT NULL,
+  ESTADO     NUMBER                             DEFAULT 0
+);
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.CODPERFIL IS 'Id de Perfil';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.NOMPERFIL IS 'Nombre de Perfil';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.USUREG IS 'Codigo de Usuario';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.FECREG IS 'Fecha de Registro';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.USUMOD IS 'Codigo de Usuario modificador';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.FECMOD IS 'Fecha de modificación de registro';
+
+COMMENT ON COLUMN OPERACION.PERFIL_TRASLADO.ESTADO IS 'Estado del registro';
+
+

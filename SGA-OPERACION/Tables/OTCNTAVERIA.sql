@@ -1,0 +1,12 @@
+CREATE TABLE OPERACION.OTCNTAVERIA
+(
+  IDCNTAVR   NUMBER(8),
+  CODOT      NUMBER(8),
+  CODSRVAVR  CHAR(4 BYTE),
+  MONEDA_ID  NUMBER(2),
+  MONTO      NUMBER(15,4),
+  FECUSU     DATE                               DEFAULT sysdate,
+  CODUSU     VARCHAR2(30 BYTE)                  DEFAULT user
+);
+
+

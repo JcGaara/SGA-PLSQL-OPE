@@ -1,0 +1,24 @@
+CREATE TABLE OPERACION.PLANTILLA_TRAS_TIPEQU
+(
+  CODPERFIL  NUMBER,
+  TIPEQU     NUMBER(6),
+  ESTADO     NUMBER                             DEFAULT 1,
+  USUREG     VARCHAR2(30 BYTE)                  DEFAULT user                  NOT NULL,
+  FECREG     DATE                               DEFAULT sysdate               NOT NULL,
+  USUMOD     VARCHAR2(30 BYTE)                  DEFAULT user                  NOT NULL,
+  FECMOD     DATE                               DEFAULT sysdate               NOT NULL
+);
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.CODPERFIL IS 'Perfil de Plantilla';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.TIPEQU IS 'Codigo del tipo de equipo';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.USUREG IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.FECREG IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.USUMOD IS 'Codigo de Usuario modificador';
+
+COMMENT ON COLUMN OPERACION.PLANTILLA_TRAS_TIPEQU.FECMOD IS 'Fecha de modificación';
+
+

@@ -1,0 +1,19 @@
+CREATE TABLE OPERACION.CONTRATAXAREA
+(
+  CODCON  NUMBER(6)                             NOT NULL,
+  AREA    NUMBER(4)                             NOT NULL,
+  CODUSU  VARCHAR2(30 BYTE)                     DEFAULT user,
+  FECUSU  DATE                                  DEFAULT SYSDATE
+);
+
+COMMENT ON TABLE OPERACION.CONTRATAXAREA IS 'Listado de contratista por area';
+
+COMMENT ON COLUMN OPERACION.CONTRATAXAREA.CODCON IS 'Codigo del contratista';
+
+COMMENT ON COLUMN OPERACION.CONTRATAXAREA.AREA IS 'Codigo de area';
+
+COMMENT ON COLUMN OPERACION.CONTRATAXAREA.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.CONTRATAXAREA.FECUSU IS 'Fecha de registro';
+
+

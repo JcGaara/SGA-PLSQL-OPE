@@ -1,0 +1,17 @@
+drop package operacion.pq_dth_rotacion;
+drop table operacion.det_atc_cort_manu_dth;
+drop table operacion.det_atc_cort_manu_dth_b;
+drop table operacion.det_atc_cort_archivo;
+drop table operacion.cab_atc_cort_archivo;
+drop table operacion.rotacion_auto_archivo;
+drop table operacion.rotacion_auto_archivo_det;
+drop table operacion.cab_rotacion_dth;
+drop table operacion.rotacion_datos;
+drop table operacion.rotacion_tarj_bqt;
+drop table operacion.rot_paq_postpago;
+drop table operacion.cab_atc_cort_manu_dth;
+drop sequence operacion.SQ_OPE_AC_ARCH;
+drop sequence operacion.SQ_OPE_AC_MANU;
+drop sequence operacion.SQ_OPE_ROTA_ARCH;
+drop sequence operacion.SQ_OPE_ROTACION;
+alter table operacion.ope_grupo_bouquet_cab drop column flg_rota;

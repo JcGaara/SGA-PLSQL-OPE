@@ -1,0 +1,25 @@
+CREATE TABLE OPERACION.EFPTO_LOG
+(
+  ORDEN           NUMBER                        NOT NULL,
+  CODEF           NUMBER(8)                     NOT NULL,
+  PUNTO           NUMBER(10)                    NOT NULL,
+  FECREAGENDA     DATE,
+  USUREAGENDA     VARCHAR2(30 BYTE),
+  CODCONREAGENDA  NUMBER
+);
+
+COMMENT ON TABLE OPERACION.EFPTO_LOG IS 'Tabla de Log del Detalle del estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.ORDEN IS 'PK';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.CODEF IS 'Codigo del estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.PUNTO IS 'Punto de estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.FECREAGENDA IS 'Fecha de reagendamiento';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.USUREAGENDA IS 'Usuario de reagendamiento';
+
+COMMENT ON COLUMN OPERACION.EFPTO_LOG.CODCONREAGENDA IS 'Código de contrata reagendada';
+
+

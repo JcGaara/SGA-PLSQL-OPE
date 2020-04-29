@@ -1,0 +1,50 @@
+CREATE TABLE OPERACION.SOLOTPTO_ID_DOC
+(
+  CODSOLOT       NUMBER(8)                      NOT NULL,
+  PUNTO          NUMBER(10)                     NOT NULL,
+  ORDEN          NUMBER(8)                      NOT NULL,
+  ESTADO         NUMBER(1)                      DEFAULT 1,
+  TIPDOC         NUMBER(2),
+  NOMBRE         VARCHAR2(100 BYTE),
+  FECHAENTREGA   DATE,
+  FLGENTREGA     NUMBER(1),
+  CODUSUENTREGA  DATE,
+  CODCON         NUMBER(6),
+  OBSERVACION    VARCHAR2(400 BYTE),
+  CODUSU         VARCHAR2(30 BYTE)              DEFAULT user                  NOT NULL,
+  FECUSU         DATE                           DEFAULT sysdate               NOT NULL,
+  FECHAESTADO    DATE,
+  TIPO           NUMBER(2)
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTO_ID_DOC IS 'Documentacion de las programacion de instalaciones';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.PUNTO IS 'Punto de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.ORDEN IS 'Orden de documento';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.ESTADO IS 'Estado del documento de la programacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.TIPDOC IS 'Tipo de documento';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.NOMBRE IS 'Nombre del documento';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.FECHAENTREGA IS 'Fecha de entrega';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.FLGENTREGA IS 'Indica si el documento esta entregado';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.CODUSUENTREGA IS 'Registra el usuario cuando se entrea la docuementacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.CODCON IS 'Codigo del contratista';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.OBSERVACION IS 'Observacion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO_ID_DOC.FECHAESTADO IS 'Fecha del cambio de estado';
+
+

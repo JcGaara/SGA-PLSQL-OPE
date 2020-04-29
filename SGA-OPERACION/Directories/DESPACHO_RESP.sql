@@ -1,0 +1,5 @@
+CREATE OR REPLACE DIRECTORY 
+DESPACHO_RESP AS 
+'/u03/oracle/PESGAPRD/UTL_FILE/SGASAP/swap/despacho/respuesta';
+
+

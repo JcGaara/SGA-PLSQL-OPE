@@ -1,0 +1,17 @@
+/* cabecera */
+INSERT INTO OPERACION.tipopedd (tipopedd, descripcion)
+VALUES ((SELECT MAX(tipopedd) + 1 FROM tipopedd), 'OPE-Config TPI - GSM');
+/* detalle */
+INSERT INTO OPERACION.opedd (tipopedd, codigon, descripcion, abreviacion) 
+VALUES ((SELECT MAX(tipopedd) FROM tipopedd), 42, 'TPI GSM - idsolucioncliente', 'TPIGSM/idsolcli'); 
+INSERT INTO OPERACION.opedd (tipopedd, codigon, descripcion, abreviacion) 
+VALUES ((SELECT MAX(tipopedd) FROM tipopedd), 44, 'TPI GSM - idsolucionclaro', 'TPIGSM/idsolcla');
+INSERT INTO OPERACION.opedd (tipopedd, codigon, descripcion, abreviacion) 
+VALUES ((SELECT MAX(tipopedd) FROM tipopedd), 70, 'TPI GSM - idcampanha', 'TPIGSM/idcampanha');
+INSERT INTO OPERACION.opedd (tipopedd, codigon, descripcion, abreviacion) 
+VALUES ((SELECT MAX(tipopedd) FROM tipopedd), 661, 'TPI GSM - Tipo de Trabajo', 'TPIGSM/tiptra'); 
+INSERT INTO OPERACION.opedd (tipopedd, codigoc, descripcion, abreviacion) 
+VALUES ((SELECT MAX(tipopedd) FROM tipopedd), '0059', 'TPI GSM - Tipo de Servicio', 'TPIGSM/tipsrv'); 
+
+COMMIT;
+

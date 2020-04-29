@@ -1,0 +1,2 @@
+alter table OPERACION.REG_LOG_SHELL ADD (constraint PK_REG_LOG_SHELL primary key (idseq));
+alter table OPERACION.REG_LOG_SHELL ADD (constraint FK_REG_LOG_SHELL_ENVIO foreign key (idenvio) references OPERACION.OPE_WS_INCOGNITO(idenvio));

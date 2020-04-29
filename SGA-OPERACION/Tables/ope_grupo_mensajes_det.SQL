@@ -1,0 +1,51 @@
+-- Create table
+create table OPERACION.OPE_GRUPO_MENSAJES_DET
+(
+  IDGRUPOMENSAJE NUMBER not null,
+  IDGRUPO        NUMBER,
+  IDMENSAJE      NUMBER,
+  DIASUTILES     NUMBER,
+  ORDEN          NUMBER,
+  ESTADO         NUMBER,
+  GRUPOEJECUCION NUMBER,
+  USUREG         VARCHAR2(30) default USER,
+  FECREG         DATE default SYSDATE,
+  USUMOD         VARCHAR2(30) default USER,
+  FECMOD         DATE default SYSDATE
+)
+tablespace OPERACION_DAT
+;
+-- Add comments to the table 
+comment on table OPERACION.OPE_GRUPO_MENSAJES_DET
+  is 'TABLA DETALLE DE GRUPO DE MENSAJES';
+-- Add comments to the columns 
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.IDGRUPOMENSAJE
+  is 'ID GRUPO DE MENSAJE';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.IDGRUPO
+  is 'ID GRUPO';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.IDMENSAJE
+  is 'ID MENSAJE';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.DIASUTILES
+  is 'DIAS UTILES';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.ORDEN
+  is 'ORDEN';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.ESTADO
+  is 'ESTADO';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.GRUPOEJECUCION
+  is 'GRUPO DE EJECUCION';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.USUREG
+  is 'USAURIO DE REGISTRO';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.FECREG
+  is 'FECHA DE REGISTRO';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.USUMOD
+  is 'USUARIO DE MODIFICACION';
+comment on column OPERACION.OPE_GRUPO_MENSAJES_DET.FECMOD
+  is 'FECHA DE MODIFICACION';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table OPERACION.OPE_GRUPO_MENSAJES_DET
+  add constraint PK_OPE_GRUPO_MENSAJES_DET primary key (IDGRUPOMENSAJE)
+  using index 
+  tablespace OPERACION_DAT
+ ;
+
+grant delete on operacion.ope_grupo_mensajes_det to R_PROD;

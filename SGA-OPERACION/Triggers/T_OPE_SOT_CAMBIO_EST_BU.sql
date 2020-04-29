@@ -1,0 +1,12 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_OPE_SOT_CAMBIO_EST_BU
+ BEFORE UPDATE ON operacion.OPE_SOT_CAMBIO_EST
+FOR EACH ROW
+BEGIN
+   :new.usumod := user;
+   :new.fecmod := sysdate;
+
+END;
+/
+
+
+

@@ -1,0 +1,2 @@
+delete from OPERACION.ope_parametros_globales_aux where nombre_parametro='cortesyreconexiones.montoreconexionTPI';
+commit;

@@ -1,0 +1,2 @@
+drop table OPERACION.SGAS_CONF_VALIDASOT;
+drop package operacion.PKG_SGA_ALINEACION_HFC; 

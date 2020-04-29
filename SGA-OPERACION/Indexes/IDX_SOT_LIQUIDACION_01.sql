@@ -1,0 +1,1 @@
+create index operacion.IDX_SOT_LIQUIDACION_01 on OPERACION.SOT_LIQUIDACION (estado, codusu);

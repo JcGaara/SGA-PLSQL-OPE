@@ -1,0 +1,2 @@
+drop function operacion.f_verifica_ope_planoxcontrata;
+drop procedure operacion.p_ins_ope_planoxcontrata_rel;

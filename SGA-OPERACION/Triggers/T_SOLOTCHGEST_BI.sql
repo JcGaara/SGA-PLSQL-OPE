@@ -1,0 +1,14 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_SOLOTCHGEST_BI
+BEFORE INSERT
+ON SOLOTCHGEST
+REFERENCING OLD AS OLD NEW AS NEW
+FOR EACH ROW
+BEGIN
+    if :new.idseq is null then
+ 		 select SQ_ID_SOLOTCHGEST.nextval into :new.idseq from dual;
+	end if;
+END;
+/
+
+
+

@@ -1,0 +1,2 @@
+delete OPERACION.CONSTANTE where constante='NUMH_CARGA_INC';
+COMMIT;

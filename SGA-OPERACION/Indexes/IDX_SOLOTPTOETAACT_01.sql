@@ -1,0 +1,1 @@
+create index operacion.IDX_SOLOTPTOETAACT_01 on operacion.SOLOTPTOETAACT (CODSOLOT);

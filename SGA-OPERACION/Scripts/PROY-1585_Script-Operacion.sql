@@ -1,0 +1,2 @@
+insert into OPERACION.ope_parametros_globales_aux(nombre_parametro,valorparametro,descripcion)  values ('cortesyreconexiones.montoreconexionTPI','5','Monto minimo para no aplicar reconexion paquetes TPI');
+commit;

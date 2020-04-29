@@ -1,0 +1,9 @@
+CREATE TABLE OPERACION.OPE_ERROR_ITW
+(
+  CODSOLOT   NUMBER,
+  NOMPROCED  VARCHAR2(70 BYTE),
+  CODUSU     VARCHAR2(30 BYTE)                  DEFAULT user,
+  FECUSU     DATE                               DEFAULT sysdate
+);
+
+

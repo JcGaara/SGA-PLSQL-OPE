@@ -1,0 +1,4 @@
+-- Create/Recreate indexes 
+create index OPERACION.IDK_OPE_SINERGIA_TIPO on OPERACION.OPE_SINERGIA_FILTROS_TMP (TIPO)
+  tablespace OPERACION_DAT;
+

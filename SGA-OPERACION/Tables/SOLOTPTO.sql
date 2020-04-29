@@ -1,0 +1,119 @@
+CREATE TABLE OPERACION.SOLOTPTO
+(
+  CODSOLOT       NUMBER(8)                      NOT NULL,
+  PUNTO          NUMBER(10)                     NOT NULL,
+  TIPTRS         NUMBER(2),
+  CODSRVANT      CHAR(4 BYTE),
+  BWANT          NUMBER(10),
+  CODSRVNUE      CHAR(4 BYTE),
+  BWNUE          NUMBER(10),
+  CODUSU         VARCHAR2(30 BYTE)              DEFAULT user                  NOT NULL,
+  FECUSU         DATE                           DEFAULT SYSDATE               NOT NULL,
+  CODINSSRV      NUMBER(10),
+  CID            NUMBER(10),
+  DESCRIPCION    VARCHAR2(100 BYTE),
+  DIRECCION      VARCHAR2(480 BYTE),
+  TIPO           NUMBER(2),
+  ESTADO         NUMBER(2)                      DEFAULT 1                     NOT NULL,
+  VISIBLE        NUMBER(1)                      DEFAULT 1                     NOT NULL,
+  PUERTA         NUMBER(1),
+  POP            NUMBER(10),
+  CODUBI         CHAR(10 BYTE),
+  FECINI         DATE,
+  FECFIN         DATE,
+  FECINISRV      DATE,
+  FECCOM         DATE,
+  TIPTRAEF       NUMBER(4),
+  TIPOTPTO       NUMBER(2),
+  EFPTO          NUMBER(10),
+  PID            NUMBER(10),
+  PID_OLD        NUMBER(10),
+  CANTIDAD       NUMBER(8)                      DEFAULT 1,
+  CODPOSTAL      VARCHAR2(30 BYTE),
+  FLGMT          NUMBER(1)                      DEFAULT 0                     NOT NULL,
+  CODINSSRV_TRA  NUMBER(10),
+  MEDIOTX        NUMBER(2),
+  PROVENLACE     NUMBER(3),
+  FLG_AGENDA     NUMBER(1)                      DEFAULT 0,
+  CINTILLO       VARCHAR2(15 BYTE),
+  NCOS_OLD       VARCHAR2(10 BYTE),
+  NCOS_NEW       VARCHAR2(10 BYTE),
+  IDPLATAFORMA   NUMBER,
+  IDPLANO        VARCHAR2(10 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTO IS 'Detalle de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.PUNTO IS 'Punto de solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.TIPTRS IS 'Codigo del tipo de transaccion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODSRVANT IS 'Codigo de servicio antiguo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.BWANT IS 'Ancho de banda antiguo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODSRVNUE IS 'Codigo de servicio nuevo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.BWNUE IS 'Ancho de banda nuevo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODINSSRV IS 'Codigo de instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CID IS 'Circuito id';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.DESCRIPCION IS 'Descripcion del punto de solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.DIRECCION IS 'Direccion';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.TIPO IS 'Tipo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.ESTADO IS 'Estado del equipo en el punto';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.VISIBLE IS 'Indica si el punto es visible para operaciones';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.PUERTA IS 'Puerta';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.POP IS 'Pop';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODUBI IS 'Codigo del distrito';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FECINI IS 'Fecha de inicio';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FECFIN IS 'Fecha de fin';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FECINISRV IS 'Fecha de inicio de servicio';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FECCOM IS 'Fecha de compromiso';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.TIPTRAEF IS 'Codigo del tipo de trabajo de estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.TIPOTPTO IS 'Tipo de la solicitud ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.EFPTO IS 'Codigo del estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.PID IS 'Identificador de la instacia de producto';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.PID_OLD IS 'Identificador de la instacia de producto anterior';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CANTIDAD IS 'Cantidad';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODPOSTAL IS 'Codigo postal';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.FLGMT IS 'Indica si el punto es de medios de terceros';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.CODINSSRV_TRA IS 'Codigo de instancia de servicio traslado';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.MEDIOTX IS 'Ultima milla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.PROVENLACE IS 'Proveedor ultima milla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.IDPLATAFORMA IS 'Identificador de la plataforma';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTO.IDPLANO IS 'Id Plano';
+
+

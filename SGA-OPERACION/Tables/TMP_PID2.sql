@@ -1,0 +1,10 @@
+CREATE TABLE OPERACION.TMP_PID2
+(
+  CODSOLOT  NUMBER(8)                           NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.TMP_PID2 IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.TMP_PID2.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+

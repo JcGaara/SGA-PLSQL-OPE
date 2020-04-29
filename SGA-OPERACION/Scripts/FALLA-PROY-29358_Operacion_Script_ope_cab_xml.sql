@@ -1,0 +1,128 @@
+DECLARE
+v_clob      clob;
+BEGIN
+  v_clob := '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sga="http://claro.com.pe/SOA/message/sga" xmlns:com="http://claro.com.pe/xsd/comun">
+<soapenv:Header/>
+<soapenv:Body>
+    <sga:txCrearUbicacionTecnicaRequest>
+       <sga:auditRequest>
+          <com:idTransaccion>@f_idtrs</com:idTransaccion>
+          <com:ipApplicacion>@f_ip</com:ipApplicacion>
+          <com:nombreAplicacion>@f_sistema</com:nombreAplicacion>
+          <com:usuarioAplicacion>@f_user</com:usuarioAplicacion>
+       </sga:auditRequest>
+       <!--Optional:-->
+       <sga:flagInstalacionAutomatica>@f_flag_instal_auto</sga:flagInstalacionAutomatica>
+       <sga:ubicacionTecnica>@f_external_number</sga:ubicacionTecnica>
+       <!--Optional:-->
+       <sga:sistemaEtiquetado>@f_sistemaEtiquetado</sga:sistemaEtiquetado>
+       <sga:dataGeneral>
+          <sga:grupoAutorizaciones>@f_grupoAutorizaciones</sga:grupoAutorizaciones>
+          <sga:tipoObjetoTecnico>@f_tipoObjetoTecnico</sga:tipoObjetoTecnico>
+          <sga:numInventario>@f_numInventario</sga:numInventario>
+          <sga:dimensionObjeto>@f_dimensionObjeto</sga:dimensionObjeto>
+          <sga:pesoObjeto>@f_pesoObjeto</sga:pesoObjeto>
+          <sga:unidadPeso>@f_unidadPeso</sga:unidadPeso>
+          <sga:ISO_UnidadMedida>@f_ISO_UnidadMedida</sga:ISO_UnidadMedida>
+          <sga:fechaAdquisicion>@f_fechaAdquisicion</sga:fechaAdquisicion>
+          <sga:valorAdquisicion>@f_valorAdquisicion</sga:valorAdquisicion>
+          <sga:claveMoneda>@f_claveMoneda</sga:claveMoneda>
+          <sga:ISO_Moneda>@f_ISO_Moneda</sga:ISO_Moneda>
+          <sga:fabricanteActivoFijo>@f_fabricanteActivoFijo</sga:fabricanteActivoFijo>
+          <sga:paisFabricacion>@f_paisFabricacion</sga:paisFabricacion>
+          <sga:ISO_PAIS>@f_ISO_PAIS</sga:ISO_PAIS>
+          <sga:numeroSerie>@f_numeroSerie</sga:numeroSerie>
+          <sga:denominacionTipoFabricante>@f_denominacionTipoFabricante</sga:denominacionTipoFabricante>
+          <sga:anioConstruccion>@f_anioConstruccion</sga:anioConstruccion>
+          <sga:mesConstruccion>@f_mesConstruccion</sga:mesConstruccion>
+          <sga:fechaPuestaServicio>@f_fechaPuestaServicio</sga:fechaPuestaServicio>
+          <sga:centroPlanificacion>@f_centroPlanificacion</sga:centroPlanificacion>
+          <sga:tipoMaterialMontaje>@f_tipoMaterialMontaje</sga:tipoMaterialMontaje>
+          <sga:numeroPieza>@f_numeroPieza</sga:numeroPieza>
+          <sga:grupoPlanificador>@f_grupoPlanificador</sga:grupoPlanificador>
+          <sga:perfilCatalogo>@f_perfilCatalogo</sga:perfilCatalogo>
+          <sga:idObjetoTrabajo>@f_idObjetoTrabajo</sga:idObjetoTrabajo>
+          <sga:descripcionObjetoTecnico>@f_descripcionObjetoTecnico</sga:descripcionObjetoTecnico>
+          <sga:flagABC>@f_flagABC</sga:flagABC>
+          <sga:campoClasificacion>@f_campoClasificacion</sga:campoClasificacion>
+          <sga:centroEmplazamiento>@f_centroEmplazamiento</sga:centroEmplazamiento>
+          <sga:emplazamientoActivoFijo>@f_emplazamientoActivoFijo</sga:emplazamientoActivoFijo>
+          <sga:local>@f_local</sga:local>
+          <sga:areaEmpresa>@f_areaEmpresa</sga:areaEmpresa>
+          <sga:ID_ObjetoPPS>@f_ID_ObjetoPPS</sga:ID_ObjetoPPS>
+          <sga:division>@f_division</sga:division>
+          <sga:centroCoste>@f_centroCoste</sga:centroCoste>
+          <sga:elementoPEP>@f_elementoPEP</sga:elementoPEP>
+          <sga:sociedad>@f_sociedad</sga:sociedad>
+          <sga:numPrincipalActivoFijo>@f_numPrincipalActivoFijo</sga:numPrincipalActivoFijo>
+          <sga:subnumeroActivoFijo>@f_subnumeroActivoFijo</sga:subnumeroActivoFijo>
+          <sga:numOrdenPermanente>@f_numOrdenPermanente</sga:numOrdenPermanente>
+          <sga:ordenLiquidacion>@f_ordenLiquidacion</sga:ordenLiquidacion>
+          <sga:organizacionVentas>@f_organizacionVentas</sga:organizacionVentas>
+          <sga:canalDistribucion>@f_canalDistribucion</sga:canalDistribucion>
+          <sga:sector>@f_sector</sga:sector>
+          <sga:oficinaVentas>@f_oficinaVentas</sga:oficinaVentas>
+          <sga:grupoVendedores>@f_grupoVendedores</sga:grupoVendedores>
+          <sga:fechaCreacion>@f_fechaCreacion</sga:fechaCreacion>
+          <sga:nombreResponsableRegistro>@f_nombreResponsableRegistro</sga:nombreResponsableRegistro>
+          <sga:fechaUltimaModificacion>@f_fechaUltimaModificacion</sga:fechaUltimaModificacion>
+          <sga:nombreResponsableModificacion>@f_nombreResponsableModificacion</sga:nombreResponsableModificacion>
+          <sga:numdireccion>@f_numdireccion</sga:numdireccion>
+          <sga:numMaterialCONSTTYPE>@f_numMaterialCONSTTYPE</sga:numMaterialCONSTTYPE>
+          <sga:UID_ExternoCONSTTYPE>@f_UID_ExternoCONSTTYPE</sga:UID_ExternoCONSTTYPE>
+          <sga:versionCONSTTYPE>@f_versionCONSTTYPE</sga:versionCONSTTYPE>
+          <sga:numObjeto>@f_numObjeto</sga:numObjeto>
+          <sga:tipoInformeObjeto>@f_tipoInformeObjeto</sga:tipoInformeObjeto>
+          <sga:claseMensaje>@f_claseMensaje</sga:claseMensaje>
+          <sga:puntoInicio>@f_puntoInicio</sga:puntoInicio>
+          <sga:puntoFinal>@f_puntoFinal</sga:puntoFinal>
+          <sga:longitud>@f_longitud</sga:longitud>
+          <sga:unidadMedidaDatosLineales>@f_unidadMedidaDatosLineales</sga:unidadMedidaDatosLineales>
+          <sga:clasePrimerDesplazamiento>@f_clasePrimerDesplazamiento</sga:clasePrimerDesplazamiento>
+          <sga:valorDesplazamiento1>@f_valorDesplazamiento1</sga:valorDesplazamiento1>
+          <sga:unidadMedidaDesplazamiento1>@f_unidadMedidaDesplazamiento1</sga:unidadMedidaDesplazamiento1>
+          <sga:claseSegundoDesplazamiento>@f_claseSegundoDesplazamiento</sga:claseSegundoDesplazamiento>
+          <sga:valorDesplazamiento2>@f_valorDesplazamiento2</sga:valorDesplazamiento2>
+          <sga:unidadMedidaDesplazamiento2>@f_unidadMedidaDesplazamiento2</sga:unidadMedidaDesplazamiento2>
+          <sga:ISO_unidadMedidaDesplazamiento2>@f_ISO_unidadMedidaDesplazamiento2</sga:ISO_unidadMedidaDesplazamiento2>
+          <sga:ISO_datosLineales>@f_ISO_datosLineales</sga:ISO_datosLineales>
+          <sga:ISO_unidadMedidaDesplazamiento1>@f_ISO_unidadMedidaDesplazamiento1</sga:ISO_unidadMedidaDesplazamiento1>
+          <sga:modeloReferenciaLineal>@f_modeloReferenciaLineal</sga:modeloReferenciaLineal>
+          <sga:marcadorPuntoInicial>@f_marcadorPuntoInicial</sga:marcadorPuntoInicial>
+          <sga:distanciaMarcadorPuntoInicio>@f_distanciaMarcadorPuntoInicio</sga:distanciaMarcadorPuntoInicio>
+          <sga:marcadorPuntoFinal>@f_marcadorPuntoFinal</sga:marcadorPuntoFinal>
+          <sga:distanciaMarcadorPuntoFinal>@f_distanciaMarcadorPuntoFinal</sga:distanciaMarcadorPuntoFinal>
+          <sga:unidadMedidaDistanciaMarcador>@f_unidadMedidaDistanciaMarcador</sga:unidadMedidaDistanciaMarcador>
+          <sga:ISO_unidadMedidaDistanciaMarcador>@f_ISO_unidadMedidaDistanciaMarcador</sga:ISO_unidadMedidaDistanciaMarcador>
+       </sga:dataGeneral>
+       <sga:dataEspecifica>
+          <sga:flagUbicacionTecnica>@f_flagUbicacionTecnica</sga:flagUbicacionTecnica>
+          <sga:tipoUbicacionTecnica>@f_tipoUbicacionTecnica</sga:tipoUbicacionTecnica>
+          <sga:ubicacionTecnicaSuperior>@f_ubicacionTecnicaSuperior</sga:ubicacionTecnicaSuperior>
+          <sga:montajeEquipos>@f_montajeEquipos</sga:montajeEquipos>
+         <sga:montajeIndividual>@f_montajeIndividual</sga:montajeIndividual>
+          <sga:posicionObjeto>@f_posicionObjeto</sga:posicionObjeto>
+          <sga:ubicacionTecnicaReferencia>@f_ubicacionTecnicaReferencia</sga:ubicacionTecnicaReferencia>
+       </sga:dataEspecifica>
+       <sga:direccion>
+          <sga:nombreDeUt>@f_nombreDeUt</sga:nombreDeUt>
+          <sga:calleAvenida>@f_calleAvenida</sga:calleAvenida>
+          <sga:numeroCalleAvenida>@f_numeroCalleAvenida</sga:numeroCalleAvenida>
+          <sga:distrito>@f_distrito</sga:distrito>
+          <sga:provincia>@f_provincia</sga:provincia>
+          <sga:pais>@f_paisUT</sga:pais>
+          <sga:zonaHoraria>@f_zonaHoraria</sga:zonaHoraria>
+          <sga:codigoPostal>@f_codigoPostal</sga:codigoPostal>
+          <sga:poblacion>@f_poblacion</sga:poblacion>
+       </sga:direccion>
+    </sga:txCrearUbicacionTecnicaRequest>
+</soapenv:Body>
+</soapenv:Envelope>';
+ 
+    UPDATE operacion.ope_cab_xml
+       SET xmlclob = v_clob
+     WHERE titulo = 'CREA_UBI_TEC';
+    
+    COMMIT;
+END;
+/

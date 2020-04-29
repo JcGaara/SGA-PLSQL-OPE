@@ -1,0 +1,46 @@
+CREATE TABLE OPERACION.ACTIVIDAD_HIS
+(
+  CODACT       NUMBER(5)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(200 BYTE)               NOT NULL,
+  CODUND       CHAR(3 BYTE)                     NOT NULL,
+  COSTO        NUMBER(10,2)                     DEFAULT 0                     NOT NULL,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  ESPERMISO    NUMBER(1)                        DEFAULT 0,
+  MONEDA       CHAR(1 BYTE)                     DEFAULT 'D'                   NOT NULL,
+  CODUBI       CHAR(10 BYTE),
+  ESTADO       NUMBER(1)                        DEFAULT 1,
+  TIPO         NUMBER(1)                        DEFAULT 0,
+  FLGCAN       NUMBER(1)                        DEFAULT 0,
+  FLGPRYLIQ    CHAR(1 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.ACTIVIDAD_HIS IS 'Listado del log de actividad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.CODACT IS 'Codigo de la actividad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.DESCRIPCION IS 'Descripcion del log de actividad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.CODUND IS 'Codigo de la unidad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.COSTO IS 'Costo de la actividad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.ESPERMISO IS 'Identifica si la actividad requiere permiso';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.MONEDA IS 'Codigo de moneda';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.CODUBI IS 'Codigo del distrito';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.ESTADO IS 'Estado';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.TIPO IS 'Tipo de la actividad';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.FLGCAN IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.ACTIVIDAD_HIS.FLGPRYLIQ IS 'No se utiliza';
+
+

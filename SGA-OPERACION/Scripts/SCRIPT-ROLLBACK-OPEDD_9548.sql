@@ -1,0 +1,4 @@
+/*BORRAR DATO DE OPEDD*/
+DELETE FROM opedd WHERE abreviacion = 'INC_CAMDIRFAC';
+COMMIT;
+/

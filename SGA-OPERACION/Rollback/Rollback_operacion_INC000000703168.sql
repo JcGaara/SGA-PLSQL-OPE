@@ -1,0 +1,27 @@
+DELETE FROM CUSBRA.BR_SEL_WF T
+ WHERE T.TIPTRA IN
+       (SELECT T.TIPTRA
+          FROM OPERACION.TIPTRABAJO T
+         WHERE T.DESCRIPCION = 'HFC/SIAC DESACTIVACIÓN POR SUSTITUCIÓN');
+
+delete from opedd where TIPOPEDD = 260 and DESCRIPCION = 'WF - Desactivación';
+
+delete from opedd
+ where TIPOPEDD in
+       (select tipopedd from tipopedd where abrev = 'TIPTRA_BAJA_SUST');
+
+delete from tipopedd where abrev = 'TIPTRA_BAJA_SUST';
+
+DELETE FROM OPEWF.TAREAWFDEF
+ WHERE DESCRIPCION = 'ACTIVACIÓN/DESACTIVACIÓN DE FACTURACIÓN - HFC/SIAC';
+
+DELETE FROM OPEWF.WFDEF
+ WHERE DESCRIPCION = 'Desactivacion por Sustitucion - HFC/SIAC';
+
+DELETE FROM OPERACION.TIPTRABAJO T
+ WHERE T.DESCRIPCION = 'HFC/SIAC DESACTIVACIÓN POR SUSTITUCIÓN';
+ 
+delete tiptrabajo t
+ where t.descripcion like '%HFC/SIAC%BAJA TOTAL POR CAMBIO DE PLAN%';
+
+COMMIT;

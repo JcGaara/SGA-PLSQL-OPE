@@ -1,0 +1,43 @@
+-- Create table
+create table OPERACION.OPE_PARAMETROS_DET
+(
+  IDPARAMETRO NUMBER not null,
+  PARAMETRO   VARCHAR2(20),
+  VALOR       VARCHAR2(25),
+  TIPODEDATO  VARCHAR2(15),
+  LONGITUD    NUMBER,
+  USUREG      VARCHAR2(30) default USER,
+  FECREG      DATE default SYSDATE,
+  USUMOD      VARCHAR2(30) default USER,
+  FECMOD      DATE default SYSDATE
+)
+tablespace OPERACION_DAT
+;
+-- Add comments to the table 
+comment on table OPERACION.OPE_PARAMETROS_DET
+  is 'TABLA DETALLE DE PARAMETROS';
+-- Add comments to the columns 
+comment on column OPERACION.OPE_PARAMETROS_DET.IDPARAMETRO
+  is 'ID PARAMETRO';
+comment on column OPERACION.OPE_PARAMETROS_DET.PARAMETRO
+  is 'PARAMETRO';
+comment on column OPERACION.OPE_PARAMETROS_DET.VALOR
+  is 'VALOR';
+comment on column OPERACION.OPE_PARAMETROS_DET.TIPODEDATO
+  is 'TIPO DE DATO';
+comment on column OPERACION.OPE_PARAMETROS_DET.LONGITUD
+  is 'LONGITUD';
+comment on column OPERACION.OPE_PARAMETROS_DET.USUREG
+  is 'USUARIO DE REGISTRO';
+comment on column OPERACION.OPE_PARAMETROS_DET.FECREG
+  is 'FECHA DE REGSITRO';
+comment on column OPERACION.OPE_PARAMETROS_DET.USUMOD
+  is 'USUARIO DE MODIFICACION';
+comment on column OPERACION.OPE_PARAMETROS_DET.FECMOD
+  is 'FECHA DE MODIFICACION';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table OPERACION.OPE_PARAMETROS_DET
+  add constraint PK_OPE_PARAMETROS_DET primary key (IDPARAMETRO)
+  using index 
+  tablespace OPERACION_DAT
+ ;

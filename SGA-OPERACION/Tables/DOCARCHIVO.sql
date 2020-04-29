@@ -1,0 +1,34 @@
+CREATE TABLE OPERACION.DOCARCHIVO
+(
+  CODDOC       NUMBER(10)                       NOT NULL,
+  CODCLI       CHAR(8 BYTE)                     NOT NULL,
+  TIPDOCARCH   NUMBER(2)                        NOT NULL,
+  RUTA         VARCHAR2(300 BYTE),
+  OBSERVACION  VARCHAR2(500 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSU       DATE                             DEFAULT sysdate               NOT NULL,
+  CODUSUMOD    VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECUSUMOD    DATE                             DEFAULT sysdate               NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.DOCARCHIVO IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.CODDOC IS 'Codigo del documento';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.CODCLI IS 'Codigo del cliente';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.TIPDOCARCH IS 'Tipo de documento del archivo';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.RUTA IS 'Ruta';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.OBSERVACION IS 'Observacion';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.CODUSUMOD IS 'Registra el usuario que modifica un dato';
+
+COMMENT ON COLUMN OPERACION.DOCARCHIVO.FECUSUMOD IS 'Fecha de modificacion';
+
+

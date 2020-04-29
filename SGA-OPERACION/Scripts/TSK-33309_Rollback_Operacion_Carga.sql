@@ -1,0 +1,5 @@
+delete from operacion.AREAOPE where area=350;
+delete from OPERACION.CONSTANTE where CONSTANTE='ESTPROCDEMO';
+delete from OPERACION.CONSTANTE where CONSTANTE='ESTNOPRODEMO';
+delete from OPERACION.CONSTANTE where CONSTANTE='TIPTRA';
+commit;

@@ -1,0 +1,16 @@
+CREATE TABLE OPERACION.PRETRANSACCIONES_CABLE
+(
+  NOMABR       VARCHAR2(50 BYTE),
+  SLDACT       NUMBER(18,4)                     NOT NULL,
+  CODCLI       CHAR(8 BYTE)                     NOT NULL,
+  NOMCLI       VARCHAR2(150 BYTE),
+  CATEGORIA    VARCHAR2(50 BYTE),
+  IDFAC        CHAR(10 BYTE)                    NOT NULL,
+  NUMDOC       CHAR(12 BYTE),
+  FECEMI       DATE,
+  FECVEN       DATE,
+  IDCATEGORIA  NUMBER,
+  TIPO         NUMBER
+);
+
+

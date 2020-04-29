@@ -1,0 +1,137 @@
+create or replace trigger operacion.T_OPE_CUADXDISTXDIA_BUID
+-- 1.0 30/10/2012  Edilberto Astulle PROY-5513_HFC - Funcionalidad de Bajas de Servicio 3play
+  before insert or update or delete on OPERACION.OPE_CUADXDISTXDIA
+  for each row
+declare
+  accion varchar2(1);
+begin
+  If updating then
+    accion := 'U';
+    Insert into HISTORICO.OPE_CUADXDISTXDIA_LOG
+    values
+      (:old.CODUBI	,
+      :old.TIPTRA	,
+      :old.CODCON	,
+      :old.CODCUADRILLA	,
+      :old.D1	,
+      :old.D2	,
+      :old.D3	,
+      :old.D4	,
+      :old.D5	,
+      :old.D6	,
+      :old.D7	,
+      :old.D8	,
+      :old.D9	,
+      :old.D10	,
+      :old.D11	,
+      :old.D12	,
+      :old.D13	,
+      :old.D14	,
+      :old.D15	,
+      :old.D16	,
+      :old.D17	,
+      :old.D18	,
+      :old.D19	,
+      :old.D20	,
+      :old.D21	,
+      :old.D22	,
+      :old.D23	,
+      :old.D24	,
+      :old.D25	,
+      :old.D26	,
+      :old.D27	,
+      :old.D28	,
+      :old.D29	,
+      :old.D30	,
+      :old.D31	,
+      accion,
+       USER,
+       SYSDATE
+       );
+  elsif inserting then
+    accion := 'I';
+    Insert into HISTORICO.OPE_CUADXDISTXDIA_LOG
+    values
+      (:new.CODUBI	,
+      :new.TIPTRA	,
+      :new.CODCON	,
+      :new.CODCUADRILLA	,
+      :new.D1	,
+      :new.D2	,
+      :new.D3	,
+      :new.D4	,
+      :new.D5	,
+      :new.D6	,
+      :new.D7	,
+      :new.D8	,
+      :new.D9	,
+      :new.D10	,
+      :new.D11	,
+      :new.D12	,
+      :new.D13	,
+      :new.D14	,
+      :new.D15	,
+      :new.D16	,
+      :new.D17	,
+      :new.D18	,
+      :new.D19	,
+      :new.D20	,
+      :new.D21	,
+      :new.D22	,
+      :new.D23	,
+      :new.D24	,
+      :new.D25	,
+      :new.D26	,
+      :new.D27	,
+      :new.D28	,
+      :new.D29	,
+      :new.D30	,
+      :new.D31	,
+      accion,
+       USER,
+       SYSDATE       );
+  elsif deleting then
+    accion := 'D';
+    Insert into HISTORICO.OPE_CUADXDISTXDIA_LOG
+    values
+      (:old.CODUBI	,
+      :old.TIPTRA	,
+      :old.CODCON	,
+      :old.CODCUADRILLA	,
+      :old.D1	,
+      :old.D2	,
+      :old.D3	,
+      :old.D4	,
+      :old.D5	,
+      :old.D6	,
+      :old.D7	,
+      :old.D8	,
+      :old.D9	,
+      :old.D10	,
+      :old.D11	,
+      :old.D12	,
+      :old.D13	,
+      :old.D14	,
+      :old.D15	,
+      :old.D16	,
+      :old.D17	,
+      :old.D18	,
+      :old.D19	,
+      :old.D20	,
+      :old.D21	,
+      :old.D22	,
+      :old.D23	,
+      :old.D24	,
+      :old.D25	,
+      :old.D26	,
+      :old.D27	,
+      :old.D28	,
+      :old.D29	,
+      :old.D30	,
+      :old.D31	,
+      accion,
+       USER,
+       SYSDATE);
+   End If;
+end;
+/

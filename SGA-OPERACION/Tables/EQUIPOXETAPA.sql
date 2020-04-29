@@ -1,0 +1,28 @@
+CREATE TABLE OPERACION.EQUIPOXETAPA
+(
+  SEQ         NUMBER,
+  IDSOLUCION  NUMBER(10)                        NOT NULL,
+  SOLUCION    VARCHAR2(100 BYTE),
+  IDPAQ       NUMBER(10)                        NOT NULL,
+  PAQUETE     VARCHAR2(4000 BYTE),
+  IDDET       NUMBER(10)                        NOT NULL,
+  IDPRODUCTO  NUMBER(10),
+  PRODUCTO    VARCHAR2(100 BYTE)                NOT NULL,
+  CODSRV      CHAR(4 BYTE),
+  CODEQUCOM   CHAR(4 BYTE),
+  EQUIPO      VARCHAR2(200 BYTE),
+  CANTIDAD    NUMBER(6),
+  SERVICIO    VARCHAR2(50 BYTE),
+  TIPEQU      NUMBER(6),
+  COSTO       NUMBER(10,2),
+  CODETA      NUMBER(5),
+  TIPEQUOPE   NUMBER(6),
+  USERCODE    VARCHAR2(20 BYTE)                 DEFAULT user,
+  USERDATE    DATE                              DEFAULT sysdate
+);
+
+COMMENT ON COLUMN OPERACION.EQUIPOXETAPA.USERCODE IS 'Usuario que inserta configuración';
+
+COMMENT ON COLUMN OPERACION.EQUIPOXETAPA.USERDATE IS 'Fecha en la que se inserta configuración';
+
+

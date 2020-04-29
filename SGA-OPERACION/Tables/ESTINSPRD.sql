@@ -1,0 +1,16 @@
+CREATE TABLE OPERACION.ESTINSPRD
+(
+  ESTINSPRD    NUMBER(2)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(100 BYTE),
+  ABREVI       VARCHAR2(20 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.ESTINSPRD IS 'Estado de la instancia de producto';
+
+COMMENT ON COLUMN OPERACION.ESTINSPRD.ESTINSPRD IS 'Codigo del estado de la instancia de producto';
+
+COMMENT ON COLUMN OPERACION.ESTINSPRD.DESCRIPCION IS 'Descripcion del estado de la instancia de producto';
+
+COMMENT ON COLUMN OPERACION.ESTINSPRD.ABREVI IS 'Abreviatura';
+
+

@@ -1,0 +1,4 @@
+ALTER TABLE operacion.vtatabcli_his
+  ADD CONSTRAINT pk_vtatabcli_his PRIMARY KEY (id)
+  USING INDEX 
+  TABLESPACE OPERACION_IDX;

@@ -1,0 +1,148 @@
+CREATE TABLE OPERACION.INT_PRYOPE
+(
+  IDSEQ          NUMBER(10)                     NOT NULL,
+  VALIDO         NUMBER(1)                      DEFAULT 1                     NOT NULL,
+  NUMSLC         CHAR(10 BYTE)                  NOT NULL,
+  NUMPTO         CHAR(5 BYTE)                   NOT NULL,
+  GRUPO          NUMBER(4),
+  NUMPTO_PRI     CHAR(5 BYTE),
+  CODSOLOT       NUMBER(8),
+  PUNTO          NUMBER(10),
+  NUMPSP         CHAR(10 BYTE),
+  IDOPC          CHAR(2 BYTE),
+  DESCRIPCION    VARCHAR2(100 BYTE),
+  DIRECCION      VARCHAR2(480 BYTE),
+  CODUBI         CHAR(10 BYTE),
+  CODSRV         CHAR(4 BYTE),
+  CODEQUCOM      CHAR(4 BYTE),
+  BW             NUMBER(10,2),
+  CODSUC         CHAR(10 BYTE),
+  ON_NET         NUMBER(1)                      DEFAULT 1,
+  CODINSSRV      NUMBER(10),
+  PID            NUMBER(10),
+  PID_OLD        NUMBER(10),
+  TIPSRV         CHAR(4 BYTE),
+  IDPRODUCTO     NUMBER(10),
+  TIPINSSRV      NUMBER(2),
+  TIPTRA         NUMBER(4),
+  TIPTRS         NUMBER(2),
+  CODCLI         CHAR(8 BYTE),
+  CANTIDAD       NUMBER(6),
+  CODINSSRV_TRA  NUMBER(10),
+  CODINSSRV_DES  NUMBER(10),
+  CODINSSRV_ORI  NUMBER(10),
+  NUMPTO_ORI     CHAR(5 BYTE),
+  NUMPTO_DES     CHAR(5 BYTE),
+  FECUSU         DATE                           DEFAULT SYSDATE               NOT NULL,
+  CODUSU         VARCHAR2(30 BYTE)              DEFAULT user                  NOT NULL,
+  FECUSUMOD      DATE                           DEFAULT SYSDATE,
+  CODUSUMOD      VARCHAR2(30 BYTE)              DEFAULT user,
+  FECCOM         DATE,
+  CODPOSTAL      VARCHAR2(30 BYTE),
+  SUBGRUPO       NUMBER(4)                      DEFAULT 0                     NOT NULL,
+  CODINSSRV_PAD  NUMBER(10),
+  CODUBIRED      NUMBER(6),
+  PLAZOINS       NUMBER(6),
+  CLIINT         CHAR(3 BYTE),
+  TIPCON         CHAR(1 BYTE),
+  IDPAQ          NUMBER(10),
+  IDDET          NUMBER(10),
+  IDINSSLA       NUMBER(10),
+  IDPLATAFORMA   NUMBER
+);
+
+COMMENT ON TABLE OPERACION.INT_PRYOPE IS 'Interfase entre ventas y operaciones';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.IDSEQ IS 'Llave primaria de la tabla';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.VALIDO IS 'Indica si el registro es valido';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMSLC IS 'Numero de proyecto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMPTO IS 'Numero del punto del proyecto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.GRUPO IS 'Grupo de la interfase';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMPTO_PRI IS 'Numero del punto principal del proyecto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.PUNTO IS 'Punto de la tabla';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMPSP IS 'Numero del proyecto de venta';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.IDOPC IS 'Versión de la oferta comercial';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.DESCRIPCION IS 'Descripcion de la interfase';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.DIRECCION IS 'Direccion';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODUBI IS 'Codigo del distrito';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODSRV IS 'Codigo de servicio';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODEQUCOM IS 'Codigo del equipo comercial';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.BW IS 'Ancho de banda';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODSUC IS 'Codigo de la sucursal';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.ON_NET IS 'Indica si el punto es on_net';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODINSSRV IS 'Codigo de instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.PID IS 'Identificador de la instacia de producto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.PID_OLD IS 'Identificador de la instacia de producto anterior';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.TIPSRV IS 'Codigo del tipo de servicio';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.IDPRODUCTO IS 'Id del producto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.TIPINSSRV IS 'Tipo de instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.TIPTRA IS 'Codigo del tipo de trabajo';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.TIPTRS IS 'Codigo del tipo de transaccion';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODCLI IS 'Codigo del cliente';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CANTIDAD IS 'Cantidad';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODINSSRV_TRA IS 'Codigo de instancia de servicio traslado';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODINSSRV_DES IS 'Codigo de instancia de servicio destino';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODINSSRV_ORI IS 'Codigo de instancia de servicio origen';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMPTO_ORI IS 'Numero del punto origen del proyecto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.NUMPTO_DES IS 'Numero del punto destino del proyecto';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.FECUSUMOD IS 'Fecha de modificacion';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODUSUMOD IS 'Registra el usuario que modifica un dato';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.FECCOM IS 'Fecha de compromiso';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODPOSTAL IS 'Codigo postal';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.SUBGRUPO IS 'Sub grupo';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODINSSRV_PAD IS 'Codigo de instancia de servicio padre';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CODUBIRED IS 'Codigo del site';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.PLAZOINS IS 'Plazo de instalación';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.CLIINT IS 'Codigo del cliente interno';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.TIPCON IS 'Tipo de contrato (Demo, Contrato)';
+
+COMMENT ON COLUMN OPERACION.INT_PRYOPE.IDPLATAFORMA IS 'Identificador de la plataforma';
+
+

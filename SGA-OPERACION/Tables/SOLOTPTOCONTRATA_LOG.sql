@@ -1,0 +1,15 @@
+CREATE TABLE OPERACION.SOLOTPTOCONTRATA_LOG
+(
+  CODIGO       NUMBER(10)                       NOT NULL,
+  CODSOLOT     NUMBER(8),
+  PUNTO        NUMBER(10),
+  ORDEN        NUMBER(5),
+  MOTIVO       VARCHAR2(500 BYTE),
+  CODCON_OLD   NUMBER(6),
+  FECASIG_OLD  DATE,
+  CODCON_NEW   NUMBER(6),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT USER,
+  FECUSU       DATE                             DEFAULT SYSDATE
+);
+
+

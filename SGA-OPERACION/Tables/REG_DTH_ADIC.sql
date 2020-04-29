@@ -1,0 +1,14 @@
+CREATE TABLE OPERACION.REG_DTH_ADIC
+(
+  NUMREGISTRO  CHAR(10 BYTE),
+  TIPSRV       CHAR(4 BYTE),
+  IDSOLUCION   NUMBER(10),
+  IDPAQ        NUMBER(10),
+  IDDET        NUMBER(10),
+  CODSRV       CHAR(4 BYTE),
+  CODIGO_EXT   VARCHAR2(100 BYTE),
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECUSU       DATE                             DEFAULT sysdate
+);
+
+

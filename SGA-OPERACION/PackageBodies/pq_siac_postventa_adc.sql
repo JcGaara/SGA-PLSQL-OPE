@@ -1,0 +1,1056 @@
+CREATE OR REPLACE PACKAGE BODY OPERACION.PQ_SIAC_POSTVENTA_ADC IS
+  /************************************************************************************************
+  NOMBRE:     OPERACION.PQ_POSTVENTA_UNIFICADA
+  PROPOSITO:  Generacion de Post Venta Automatica HFC
+
+  REVISIONES:
+   Version   Fecha          Autor             Solicitado por      Descripcion
+   -------- ----------   ------------------   -----------------   -----------------------
+   1.0      2013-09-11   Alex Alamo           Hector Huaman       Generar Cambio de Plan y Traslado Externo
+                         Eustaquio Gibaja
+                         Mauro Zegarra
+   2.0      2014-02-25   Carlos Chamache      Hector Huaman       Creacion de Servicios POST-VENTA
+   3.0      2014-05-14   Hector Huaman        Hector Huaman       Creacion de Servicios POST-VENTA (Adecuaciones)
+   4.0      2014-05-21   Hector Huaman        Hector Huaman       Cargo del servicio
+   5.0      2014-07-21   Alex Alamo           Hector Huaman       modificar Proceso Cambio de Plan
+   6.0      2014-08-19   Hector Huaman        Hector Huaman       SD-1173230
+   7.0      2014-11-25   Eustaquio Gibaja     Hector Huaman       Mejoras en el flujo de traslado ext. (reemplazar variables globales)
+   8.0      2014-11-28   Eustaquio Gibaja     Hector Huaman       Mejoras en la generacion de contacto de cliente.
+   9.0      2014-12-11   Edwin Vasquez        Hector Huaman       Deco Adicional
+  10.0      2015-01-22   Freddy Gonzales      Hector Huaman       Registrar datos en la tabla sales.int_negocio_instancia
+                                                                  al generar una Post Venta desde Deco Adicional.
+  11.0      2015-03-04   Freddy Gonzales      Guillermo Salcedo   SDM 230032: Generar SOT de Translado Externo cuando el cliente viene
+                                                                  anteriormente con Cambio de plan.
+  12.0           2015-03-23        Luz Facundo                                                   p_validad_transaccion
+  13.0      2015-05-13   Freddy Gonzales      Hector Huaman       SD-298641
+  14.0      2015-11-13   Fernando Loza        Richard Medina      SD-522935 generar raise_application_error en caso de error
+  15.0      2015-11-26   Leonardo Silvera     Paul Moya           PROY-17652 IDEA-22491 - ETAdirect
+  /************************************************************************************************/
+  C_ACTIVO CONSTANT marketing.vtatabcli.idestado%TYPE := 1;
+
+  procedure p_genera_transaccion(p_id                 sales.sisact_postventa_det_serv_hfc.idinteraccion%type,
+                                 v_cod_id             sales.sot_sisact.cod_id%type,
+                                 v_customer_id        sales.cliente_sisact.customer_id%type,
+                                 v_tipotrans          varchar2,
+                                 v_codintercaso       varchar2,
+                                 v_tipovia            inmueble.tipviap%type,
+                                 v_nombrevia          inmueble.nomvia%type,
+                                 v_numerovia          inmueble.numvia%type,
+                                 v_tipourbanizacion   vtasuccli.idtipurb%type,
+                                 v_nombreurbanizacion vtasuccli.nomurb%type,
+                                 v_manzana            inmueble.manzana%type,
+                                 v_lote               inmueble.lote%type,
+                                 v_codubigeo          vtatabdst.ubigeo%type,
+                                 v_codzona            vtasuccli.codzona%type,
+                                 v_idplano            vtasuccli.idplano%type,
+                                 v_codedif            varchar2,
+                                 v_referencia         inmueble.referencia%type,
+                                 v_observacion        SOLOT.OBSERVACION%type,
+                                 v_fec_prog           date,
+                                 v_franja_horaria     varchar2,
+                                 v_numcarta           vtatabprecon.carta%type,
+                                 v_operador           vtatabprecon.carrier%type,
+                                 v_presuscrito        vtatabprecon.presusc%type,
+                                 v_publicar           vtatabprecon.publicar%type,
+                                 v_ad_tmcode          varchar2,
+                                 v_lista_coser        varchar2,
+                                 v_lista_spcode       varchar2,
+                                 v_usuarioreg         solot.codusu%type,
+                                 v_cargo              agendamiento.cargo%type,
+                                 v_codsolot           out solot.codsolot%type,
+                                 p_error_code         out number,
+                                 p_error_msg          out varchar2) is
+
+    p_postventa     OPERACION.PQ_SIAC_POSTVENTA.postventa_in_type;
+    p_postventa_out  OPERACION.PQ_SIAC_POSTVENTA.postventa_out_type;
+    as_areasol      solot.areasol%type;
+    as_numslc       vtatabslcfac.numslc%type;
+    as_codusu       varchar2(50);
+    p_idprocess     operacion.siac_postventa_proceso.idprocess%type;
+    ac_mensaje   varchar2(200);
+    flag_eta     varchar2(3) := '';
+  begin
+    insert into operacion.nota (observacion) values (v_observacion);
+    p_postventa.cod_id             := v_cod_id;
+    p_postventa.customer_id        := v_customer_id;
+    p_postventa.tipotrans          := v_tipotrans;
+    p_postventa.codintercaso       := v_codintercaso;
+    p_postventa.tipovia            := v_tipovia;
+    p_postventa.nombrevia          := v_nombrevia;
+    p_postventa.numerovia          := v_numerovia;
+    p_postventa.tipourbanizacion   := v_tipourbanizacion;
+    p_postventa.nombreurbanizacion := v_nombreurbanizacion;
+    p_postventa.manzana            := v_manzana;
+    p_postventa.lote               := v_lote;
+    p_postventa.codubigeo          := v_codubigeo;
+    p_postventa.codzona            := v_codzona;
+    p_postventa.idplano            := v_idplano;
+    p_postventa.codedif            := v_codedif;
+    p_postventa.referencia         := v_referencia;
+    p_postventa.observacion        := v_observacion;
+    p_postventa.fec_prog           := v_fec_prog;
+    p_postventa.franja_horaria     := v_franja_horaria;
+    p_postventa.numcarta           := v_numcarta;
+    p_postventa.operador           := v_operador;
+    p_postventa.presuscrito        := v_presuscrito;
+    p_postventa.publicar           := v_publicar;
+    p_postventa.ad_tmcode          := v_ad_tmcode;
+    p_postventa.lista_coser        := v_lista_coser;
+    p_postventa.lista_spcode       := v_lista_spcode;
+    p_postventa.cargo              := v_cargo;
+
+    p_error_code := -1;
+    p_error_msg  := 'ERROR';
+
+    p_idprocess := set_negocio_proceso(p_postventa);
+    g_idprocess := p_idprocess;
+
+    regla_negocio('PRE');
+
+    operacion.pq_siac_postventa.p_validad_transaccion(v_customer_id,
+                                                      p_error_code,
+                                                      p_error_msg);
+
+    if p_error_code = 0 then
+      if p_postventa.tipotrans = 'SIAC-HFC-TRASLADO_EXT' then
+        load_information_te(p_postventa);
+        operacion.pq_siac_traslado_externo.execute_main(p_postventa);
+        v_codsolot := pq_siac_traslado_externo.get_postventa_codsolot(p_idprocess);
+    
+          --ETAdirect
+          sales.pkg_etadirect.p_registro_eta(v_codsolot,TO_NUMBER(v_codintercaso),0,ac_mensaje);
+          --ETAdirect
+    
+      elsif p_postventa.tipotrans = 'SIAC-HFC-CAMBIO_PLAN' then
+        operacion.pq_siac_cambio_plan.execute_main(p_id,
+                                                   p_postventa.cod_id,
+                                                   load_information_cp(p_postventa));
+        p_postventa_out := get_postventa_out(p_postventa.tipotrans);
+        regla_negocio('POS');
+        v_codsolot := p_postventa_out.codsolot;
+        
+        --ETAdirect
+        sales.pkg_etadirect.p_registro_eta(v_codsolot,TO_NUMBER(v_codintercaso),0,ac_mensaje);
+        --ETAdirect
+
+      elsif p_postventa.tipotrans = 'SIAC-HFC-DECO_ADICIONAL' then
+        v_codsolot := operacion.pq_deco_adicional_adc.deco_adicional(p_idprocess,
+                                                                 p_id,
+                                                                 v_cod_id,
+                                                                 v_cargo);
+      else
+        RAISE_APPLICATION_ERROR(-20000,
+                                'Tipo de Transaccion no definida: ' ||
+                                p_postventa.tipotrans);
+        return;
+      end if;
+
+      begin
+        select p.codigon_aux
+          into p_postventa.codmotot
+          from tipopedd t, opedd p
+         where t.tipopedd = p.tipopedd
+           and t.abrev = 'TRANS_POSTVENTA'
+           and p.abreviacion = p_postventa.tipotrans;
+      exception
+        when others then
+          p_postventa.codmotot := null;
+      end;
+
+      --Obtener Area
+      begin
+        select numslc
+          into as_numslc
+          from sales.sot_sisact
+         where cod_id = v_cod_id;
+
+        select USUREG
+          into as_codusu
+          from SALES.SOT_SISACT
+         where numslc = as_numslc;
+
+        select area
+          into as_areasol
+          from usuarioope
+         where usuarioope.usuario = as_codusu;
+
+      exception
+        when others then
+
+        select a.valor
+          into as_areasol
+          from constante a
+         where constante = 'AREAUSUARIO';
+
+      end;
+
+      --Actualizar usuario solicitante
+      update solot
+         set codusu      = v_usuarioreg,
+             areasol     = as_areasol,
+             codmotot    = p_postventa.codmotot,
+             customer_id = v_customer_id,
+             cod_id      = decode(p_postventa.tipotrans,'SIAC-HFC-TRASLADO_EXT',v_cod_id,cod_id),---
+             cod_id_old  = decode(p_postventa.tipotrans,'SIAC-HFC-CAMBIO_PLAN',v_cod_id,null),
+             cargo       = v_cargo,
+             observacion = p_postventa.observacion
+       where codsolot = v_codsolot;
+
+
+      if v_codsolot is not null then
+         update  sales.sisact_postventa_det_serv_hfc set codsolot =v_codsolot where idinteraccion=p_id;
+      end if; 
+      p_error_code := 0;
+      p_error_msg  := 'OK';
+    end if;
+
+  exception
+    when others then
+      p_error_code := -1;
+      p_error_msg  := format_msg(sqlerrm);
+      set_log_err(p_error_msg);
+      
+    --<INI 14.0>
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'p_genera_transaccion' ||
+                                  ' -- ' || SQLERRM);
+    --<FIN 14.0>      
+      
+  end;
+  ----------------------------------------------------------------------------------
+  PROCEDURE execute_main(p_postventa OPERACION.PQ_SIAC_POSTVENTA.postventa_in_type,
+                         p_id        sales.sisact_postventa_det_serv_hfc.idinteraccion%TYPE, --2.0
+                         --p_servicios     operacion.pq_siac_cambio_plan.servicios_type, --2.0
+                         p_postventa_out OUT OPERACION.PQ_SIAC_POSTVENTA.postventa_out_type,
+                         p_error_code    OUT NUMBER,
+                         p_error_msg     OUT VARCHAR2) IS
+
+  BEGIN
+    p_error_code := -1;
+    p_error_msg  := 'ERROR';
+
+    g_idprocess := set_negocio_proceso(p_postventa);
+
+    regla_negocio('PRE');
+
+    IF p_postventa.tipotrans = 'SIAC-HFC-TRASLADO_EXT' THEN
+      load_information_te(p_postventa);
+      operacion.pq_siac_traslado_externo.execute_main(p_postventa);
+
+      p_postventa_out := get_postventa_out(p_postventa.tipotrans);
+    ELSIF p_postventa.tipotrans = 'SIAC-HFC-CAMBIO_PLAN' THEN
+      --BEGIN --5.0
+      operacion.pq_siac_cambio_plan.execute_main( --p_postventa.lista_sncode, <2.0>
+                                                 --p_postventa.lista_tipequ, <2.0>
+                                                 --p_servicios, --<2.0>
+                                                 p_id, --2.0
+                                                 p_postventa.cod_id,
+                                                 load_information_cp(p_postventa));
+      -- EXCEPTION WHEN OTHERS THEN --5.0
+      --        p_error_msg := SQLERRM ; --5.0
+      --  RAISE_APPLICATION_ERROR(-20000,SQLERRM); --5.0
+
+      --  END ;    --5.0
+      p_postventa_out := get_postventa_out(p_postventa.tipotrans);
+
+      regla_negocio('POS');
+    ELSE
+      RAISE_APPLICATION_ERROR(-20000,
+                              'Tipo de Transaccion no definida: ' ||
+                              p_postventa.tipotrans);
+      RETURN;
+    END IF;
+
+    p_error_code := 0;
+    p_error_msg  := 'OK';
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      p_error_code := -1;
+      p_error_msg  := '**ERROR    :    ' || SQLERRM; -- format_msg(SQLERRM); -- 5.0
+    --set_log_err(p_error_msg); --5.0
+    
+--<INI 14.0>
+       RAISE_APPLICATION_ERROR(-20000,
+                                $$PLSQL_UNIT || '.' || 'execute_main  - p_id = ' || p_id ||
+                                ' -- ' || SQLERRM);
+--<FIN 14.0>                     
+    
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_postventa_out(p_tipotrans VARCHAR2) RETURN OPERACION.PQ_SIAC_POSTVENTA.postventa_out_type IS
+    l_postventa_out  OPERACION.PQ_SIAC_POSTVENTA.postventa_out_type;
+
+  BEGIN
+    CASE p_tipotrans
+      WHEN 'SIAC-HFC-TRASLADO_EXT' THEN
+        --ini 7.0
+        /* l_postventa_out.codsuc   := operacion.pq_siac_traslado_externo.g_codsuc;
+        l_postventa_out.numslc   := operacion.pq_siac_traslado_externo.g_numslc_new;
+        l_postventa_out.codsolot := operacion.pq_siac_traslado_externo.g_codsolot;*/
+        NULL;
+        --fin 7.0
+      WHEN 'SIAC-HFC-CAMBIO_PLAN' THEN
+        l_postventa_out.codsuc   := NULL;
+        l_postventa_out.numslc   := operacion.pq_siac_cambio_plan.g_numslc_new;
+        l_postventa_out.codsolot := operacion.pq_siac_cambio_plan.g_codsolot;
+        --l_postventa_out.numslc   := operacion.pq_siac_cambio_plan.g_numslc_old;     --5.0
+    END CASE;
+
+    RETURN l_postventa_out;
+
+  --<INI 14.0>
+    EXCEPTION
+      WHEN OTHERS THEN
+         RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'get_postventa_out - p_tipotrans= ' || p_tipotrans ||
+                                  ' -- ' || SQLERRM);
+  --<FIN 14.0> 
+    
+  END;
+  --------------------------------------------------------------------------------
+  procedure load_information_te(p_postventa OPERACION.PQ_SIAC_POSTVENTA.postventa_in_type) is
+    l_codcli     vtatabcli.codcli%type;
+    l_numslc_old vtatabslcfac.numslc%type;
+    l_codcnt     vtatabcntcli.codcnt%type;
+  
+  begin
+    l_codcli     := get_codcli(p_postventa.customer_id);
+    l_numslc_old := get_numslc(p_postventa.cod_id, l_codcli);
+    verificar_cliente_proyecto(l_numslc_old, l_codcli);
+    l_codcnt := get_contacto(l_codcli);
+  
+    if l_codcnt is null then
+      l_codcnt := insert_vtatabcntcli(l_codcli);
+    end if;
+    
+  --<INI 14.0>
+    EXCEPTION
+      WHEN OTHERS THEN
+         RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'load_information_te' ||
+                                  ' -- ' || SQLERRM);
+  --<FIN 14.0>      
+  end;
+  /* **********************************************************************************************/
+  FUNCTION load_information_cp(p_postventa OPERACION.PQ_SIAC_POSTVENTA.postventa_in_type)
+    RETURN operacion.pq_siac_cambio_plan.precon_type IS
+    l_precon_type operacion.pq_siac_cambio_plan.precon_type;
+
+  BEGIN
+    l_precon_type.obsaprofe := p_postventa.observacion;
+    l_precon_type.carta     := p_postventa.numcarta;
+    l_precon_type.carrier   := p_postventa.operador;
+    l_precon_type.presusc   := p_postventa.presuscrito;
+    l_precon_type.publicar  := p_postventa.publicar;
+
+    RETURN l_precon_type;
+  --<INI 14.0>
+    EXCEPTION
+      WHEN OTHERS THEN
+         RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'load_information_cp' ||
+                                  ' -- ' || SQLERRM);
+  --<FIN 14.0>      
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_codcli(p_customer_id sales.cliente_sisact.customer_id%TYPE)
+    RETURN sales.cliente_sisact.codcli%TYPE IS
+    l_codcli sales.cliente_sisact.codcli%TYPE;
+
+  BEGIN
+    SELECT codcli
+      INTO l_codcli
+      FROM sales.cliente_sisact
+     WHERE customer_id = p_customer_id;
+
+    RETURN l_codcli;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'El Cliente con CUSTOMERID: ' || p_customer_id ||
+                              ' no se encuentra registrado en SGA');
+    WHEN TOO_MANY_ROWS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'Se tiene mas de un Cliente con el CUSTOMERID: ' ||
+                              p_customer_id || ' registrado en SGA');
+    --<INI 14.0>
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                $$PLSQL_UNIT || '.' || 'get_codcli' ||
+                                ' -- ' || SQLERRM);
+    --<FIN 14.0>
+                              
+  END;
+  --------------------------------------------------------------------------------
+
+  function get_numslc(p_cod_id sales.sot_sisact.cod_id%type,
+                      p_codcli sales.vtatabslcfac.codcli%type)
+    return sales.sot_sisact.numslc%type is
+    c_instancia   sales.int_negocio_instancia.instancia%type := 'PROYECTO DE VENTA';
+    c_instanciacp operacion.siac_instancia.tipo_instancia%type := 'PROYECTO DE POSTVENTA';
+    l_numslc      sales.sot_sisact.cod_id%type;
+  
+  begin
+    select a.numslc
+      into l_numslc
+      from sales.sot_sisact            a,
+           sales.int_negocio_instancia b,
+           sales.int_business_line_sel c,
+           inssrv                      d
+     where a.cod_id = p_cod_id
+       and a.numslc = b.idinstancia
+       and b.idprocess = c.idprocess
+       and b.instancia = c_instancia       
+       and a.numslc = d.numslc
+       and d.estinssrv = 1
+     group by a.numslc;
+  
+    return l_numslc;
+  
+  exception
+    when no_data_found then
+      select max(instancia)
+        into l_numslc
+        from vtatabslcfac a, operacion.siac_instancia b, inssrv c, 
+             sales.sot_siac d, solot e
+       where a.codcli = p_codcli
+         and a.numslc = b.instancia
+         and b.tipo_instancia = c_instanciacp
+         and a.numslc = c.numslc
+         and d.codsolot = e.codsolot
+         and e.numslc = b.instancia
+         and d.cod_id = p_cod_id
+         and c.estinssrv = 1;
+
+      if l_numslc is null then
+        raise_application_error(-20000,
+                                'El proyecto con COD_ID: ' || p_cod_id ||
+                                ' no se encuentra registrado en SGA ');
+      end if;
+    
+      return l_numslc;
+    
+    when others then
+      raise_application_error(-20000,
+                              $$plsql_unit || '.get_numslc(p_cod_id => ' ||
+                              p_cod_id || ', p_codcli => ' || p_codcli || ') ' ||
+                              sqlerrm);
+  end;
+  
+  /* **********************************************************************************************/
+  PROCEDURE verificar_cliente_proyecto(p_numslc vtatabslcfac.numslc%TYPE,
+                                       p_codcli vtatabcli.codcli%TYPE) IS
+    l_count NUMBER;
+
+  BEGIN
+    SELECT COUNT(*)
+      INTO l_count
+      FROM vtatabslcfac v
+     WHERE v.numslc = p_numslc
+       AND v.codcli = p_codcli;
+
+    IF l_count = 0 THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'El Cliente : ' || /*g_codcli*/ p_codcli|| --7.0
+                              ' no esta asociado al proyecto: ' || /*g_numslc_old*/p_numslc); --7.0
+    END IF;
+  --<INI 14.0>
+  EXCEPTION
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'verificar_cliente_proyecto - ' ||
+                                  'p_codcli= ' || p_codcli ||
+                                  ' - p_numslc= ' || p_numslc ||
+                                  ' -- ' || SQLERRM);
+  --<FIN 14.0>       
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_contacto(p_codcli sales.cliente_sisact.codcli%TYPE)
+    RETURN marketing.vtatabcntcli.codcnt%TYPE IS
+    l_codcnt  marketing.vtatabcntcli.codcnt%TYPE;
+    l_tipdide marketing.vtatabcntcli.tipdide%TYPE;
+    l_ntdide  marketing.vtatabcntcli.nidcnt%TYPE;
+
+  BEGIN
+    l_tipdide := get_tipdide(p_codcli);
+    l_ntdide  := get_ntdide(p_codcli);
+
+    SELECT MAX(codcnt)
+      INTO l_codcnt
+      FROM marketing.vtatabcntcli
+     WHERE codcli = p_codcli
+       AND tipdide = l_tipdide
+       AND nidcnt = l_ntdide
+       AND estado = c_activo;
+
+    RETURN l_codcnt;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RETURN NULL;
+--<INI 14.0>
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                $$PLSQL_UNIT || '.' || 'get_contacto - p_codcli= ' || p_codcli ||
+                                ' -- ' || SQLERRM);
+--<FIN 14.0>     
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_tipdide(p_codcli sales.cliente_sisact.codcli%TYPE)
+    RETURN marketing.vtatabcli.tipdide%TYPE IS
+    l_tipdide marketing.vtatabcli.tipdide%TYPE;
+
+  BEGIN
+    SELECT tipdide
+      INTO l_tipdide
+      FROM marketing.vtatabcli
+     WHERE codcli = p_codcli
+       AND idestado = c_activo;
+
+    RETURN l_tipdide;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'El Cliente: ' || p_codcli ||
+                              ' no presenta tipo de documento de identidad');
+--<INI 14.0>
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'get_tipdide - p_codcli= ' || p_codcli ||
+                                  ' -- ' || SQLERRM);
+--<FIN 14.0>                                  
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_ntdide(p_codcli sales.cliente_sisact.codcli%TYPE)
+    RETURN marketing.vtatabcli.ntdide%TYPE IS
+    l_ntdide marketing.vtatabcli.ntdide%TYPE;
+
+  BEGIN
+    SELECT ntdide
+      INTO l_ntdide
+      FROM marketing.vtatabcli
+     WHERE codcli = p_codcli
+       AND idestado = c_activo;
+
+    RETURN l_ntdide;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'El Cliente: ' || p_codcli ||
+                              ' no presenta numero del tipo de documento de identidad');
+--<INI 14.0>
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'get_ntdide - p_codcli= ' || p_codcli ||
+                                  ' -- ' || SQLERRM);
+--<FIN 14.0>                                 
+  END;
+  /* **********************************************************************************************/
+  FUNCTION insert_vtatabcntcli(p_codcli sales.cliente_sisact.codcli%TYPE)
+    RETURN marketing.vtatabcntcli.codcnt%TYPE IS
+    C_PROPIETARIO CONSTANT vtatabcntcli.tipcnt%TYPE := '08';
+    l_vtatabcntcli marketing.vtatabcntcli%ROWTYPE;
+    l_codcnt       marketing.vtatabcntcli.codcnt%TYPE;
+
+  BEGIN
+    SELECT apepatcli, apematcli, SUBSTR(nomcli,0,40) -- 8.0 nomcli
+      INTO l_vtatabcntcli.apepat, l_vtatabcntcli.apemat, l_vtatabcntcli.nombre
+      FROM marketing.vtatabcli
+     WHERE codcli = p_codcli --g_codcli 7.0
+       AND idestado = C_ACTIVO;
+
+    l_vtatabcntcli.codcli  := p_codcli;
+    l_vtatabcntcli.tipdide := get_tipdide(p_codcli);
+    l_vtatabcntcli.nidcnt  := get_ntdide(p_codcli);
+    l_vtatabcntcli.fecusu  := SYSDATE;
+    l_vtatabcntcli.nomcnt  := l_vtatabcntcli.nomcnt || ' ' ||
+                              l_vtatabcntcli.apepat || ' ' ||
+                              l_vtatabcntcli.apemat;
+    l_vtatabcntcli.tipcnt  := C_PROPIETARIO;
+    l_vtatabcntcli.estado  := C_ACTIVO;
+
+    l_vtatabcntcli.carcli      := 3;
+    l_vtatabcntcli.carcnt      := get_dsccnt(c_propietario);
+    l_vtatabcntcli.observacion := 'CONTACTO CREADO AUTOMATICAMENTE - POST VENTA';
+
+    INSERT INTO vtatabcntcli
+    VALUES l_vtatabcntcli
+    RETURNING codcnt INTO l_codcnt;
+
+    --COMMIT; --5.0
+
+    RETURN l_codcnt;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'Error al insertar contacto del cliente: ' ||
+                              l_vtatabcntcli.codcli);
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_dsccnt(p_tipcnt vtatabcntcli.tipcnt%TYPE)
+    RETURN marketing.vtatipcnt.dsccnt%TYPE IS
+    l_dsccnt marketing.vtatipcnt.dsccnt%TYPE;
+
+  BEGIN
+    SELECT dsccnt
+      INTO l_dsccnt
+      FROM marketing.vtatipcnt
+     WHERE tipcnt = p_tipcnt;
+
+    RETURN l_dsccnt;
+
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'El tipo de contacto: ' || p_tipcnt ||
+                              ' no existe o no presenta descripcion');
+
+--<INI 14.0>
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                $$PLSQL_UNIT || '.' || 'get_dsccnt - p_tipcnt= ' || p_tipcnt ||
+                                ' -- ' || SQLERRM);
+--<FIN 14.0>                                 
+  END;
+  /* **********************************************************************************************/
+  FUNCTION set_negocio_proceso(p_postventa OPERACION.PQ_SIAC_POSTVENTA.postventa_in_type)
+    RETURN sales.int_negocio_proceso.idprocess%TYPE IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+
+    l_proceso   operacion.siac_postventa_proceso%ROWTYPE;
+    l_idprocess operacion.siac_postventa_proceso.idprocess%TYPE;
+
+  BEGIN
+    l_proceso.cod_id        := p_postventa.cod_id;
+    l_proceso.customer_id   := p_postventa.customer_id;
+    l_proceso.tipo_trans    := p_postventa.tipotrans;
+    l_proceso.cod_intercaso := p_postventa.codintercaso;
+    l_proceso.tipo_via      := p_postventa.tipovia;
+    l_proceso.nom_via       := p_postventa.nombrevia;
+    l_proceso.num_via       := p_postventa.numerovia;
+    l_proceso.tip_urb       := p_postventa.tipourbanizacion;
+    l_proceso.nomurb        := p_postventa.nombreurbanizacion;
+    l_proceso.manzana       := p_postventa.manzana;
+    l_proceso.lote          := p_postventa.lote;
+    l_proceso.ubigeo        := p_postventa.codubigeo;
+    l_proceso.codzona       := p_postventa.codzona;
+    l_proceso.codplano      := p_postventa.idplano;
+    l_proceso.codedif       := NULL; --p_postventa.codedif;
+    l_proceso.referencia    := p_postventa.referencia;
+    l_proceso.observacion   := p_postventa.observacion;
+    l_proceso.fec_prog      := p_postventa.fec_prog;
+    l_proceso.franja_hor    := p_postventa.franja_horaria;
+    l_proceso.num_carta     := p_postventa.numcarta;
+    l_proceso.operador      := p_postventa.operador;
+    l_proceso.presuscrito   := p_postventa.presuscrito;
+    l_proceso.publicar      := p_postventa.publicar;
+    l_proceso.tmcode        := p_postventa.ad_tmcode;
+    --l_proceso.lst_tipequ    := p_postventa.lista_tipequ; <2.0>
+    l_proceso.lst_coser := p_postventa.lista_coser;
+    --l_proceso.lst_sncode    := p_postventa.lista_sncode; <2.0>
+    l_proceso.lst_spcode := p_postventa.lista_spcode;
+
+    INSERT INTO operacion.siac_postventa_proceso
+    VALUES l_proceso
+    RETURNING idprocess INTO l_idprocess;
+
+    COMMIT;
+
+    RETURN l_idprocess;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'set_negocio_proceso: ' ||
+                              SQLERRM);
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE regla_negocio(p_tipo_regla VARCHAR2) IS
+    C_IDNEGOCIO CONSTANT PLS_INTEGER := 1;
+    l_sql VARCHAR2(4000);
+
+    CURSOR reglas_cur IS
+      SELECT r.orden, r.sentencia
+        FROM operacion.siac_negocio n, operacion.siac_negocio_regla r
+       WHERE n.idnegocio = r.idnegocio
+         AND r.flg_activo = 1
+         AND n.idnegocio = C_IDNEGOCIO
+         AND r.tipo = p_tipo_regla
+       ORDER BY r.orden ASC;
+
+  BEGIN
+    FOR regla_rec IN reglas_cur LOOP
+      l_sql := 'BEGIN ' || regla_rec.sentencia || '; END;';
+      EXECUTE IMMEDIATE l_sql;
+    END LOOP;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'regla_negocio: ' ||
+                              SQLERRM);
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_msg_error(p_valor      VARCHAR2,
+                         p_key_detail operacion.config_det.key_detail%TYPE,
+                         p_value      operacion.config_det.value%TYPE)
+    RETURN VARCHAR2 IS
+    l_tipotrans operacion.siac_postventa_proceso.tipo_trans%TYPE;
+    l_msg       VARCHAR2(400);
+
+  BEGIN
+    SELECT s.tipo_trans
+      INTO l_tipotrans
+      FROM operacion.siac_postventa_proceso s
+     WHERE s.idprocess = g_idprocess;
+
+    IF p_valor IS NULL AND p_value = l_tipotrans THEN
+      l_msg := 'ERROR: El valor del campo: ' || TO_CHAR(p_key_detail) ||
+               ' es nulo; Para la transaccion:' || TO_CHAR(p_value);
+    END IF;
+
+    IF p_valor IS NULL AND p_value IS NULL THEN
+      l_msg := 'ERROR: El valor del campo obligatorio: ' ||
+               TO_CHAR(p_key_detail) || ' es nulo.';
+    END IF;
+
+    RETURN l_msg;
+    
+--<INI 14.0>
+  EXCEPTION
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'get_msg_error' ||
+                                  ' -- ' || SQLERRM);
+--<FIN 14.0>    
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE review_negocio_proceso IS
+    l_value  VARCHAR2(4000);
+    l_msg    VARCHAR2(400);
+    l_column VARCHAR2(50);
+
+    CURSOR column_cur IS
+      SELECT d.*
+        FROM operacion.config c, operacion.config_det d
+       WHERE c.idconf = d.idconf
+         AND d.status = 1
+         AND c.key_master = 'EVALUA_CAMPOS'
+       ORDER BY d.rowid ASC;
+
+  BEGIN
+    FOR column_rec IN column_cur LOOP
+      IF column_rec.value = 'PK' THEN
+        l_column := column_rec.key_detail;
+      ELSE
+        EXECUTE IMMEDIATE 'SELECT ' || column_rec.key_detail || ' FROM ' ||
+                          column_rec.description || ' WHERE ' || l_column ||
+                          ' = ' || g_idprocess
+          INTO l_value;
+
+        l_msg := get_msg_error(l_value, column_rec.key_detail, column_rec.value);
+
+        IF l_msg IS NOT NULL THEN
+          RAISE_APPLICATION_ERROR(-20000, l_msg);
+        END IF;
+      END IF;
+    END LOOP;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.review_negocio_proceso: ' ||
+                              SQLERRM);
+  END;
+  /* **********************************************************************************************/
+  FUNCTION format_msg(p_msg_err operacion.siac_negocio_err.ora_text%TYPE)
+    RETURN operacion.siac_negocio_err.ora_text%TYPE IS
+    l_msg_formatted operacion.siac_negocio_err.ora_text%TYPE;
+
+  BEGIN
+    l_msg_formatted := REPLACE(p_msg_err, 'ORA', CHR(10) || 'ORA');
+    l_msg_formatted := LTRIM(l_msg_formatted, CHR(10));
+
+    RETURN l_msg_formatted;
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE set_log_err(p_msg_err operacion.siac_negocio_err.ora_text%TYPE) IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+
+    l_error operacion.siac_negocio_err%ROWTYPE;
+
+  BEGIN
+    l_error.idprocess := g_idprocess;
+    l_error.ora_text  := p_msg_err;
+    l_error.usureg    := USER;
+    l_error.fecreg    := SYSDATE;
+
+    INSERT INTO operacion.siac_negocio_err VALUES l_error;
+
+    COMMIT;
+    
+  --<INI 14.0>
+    EXCEPTION
+      WHEN OTHERS THEN
+         RAISE_APPLICATION_ERROR(-20000,
+                                    $$PLSQL_UNIT || '.' || 'set_log_err' ||
+                                    ' -- ' || SQLERRM);
+  --<FIN 14.0>   
+    
+  END;
+  /* **********************************************************************************************/
+  FUNCTION get_inf_instancia RETURN  OPERACION.PQ_SIAC_POSTVENTA.instan_in_type IS
+    l_instan  OPERACION.PQ_SIAC_POSTVENTA.instan_in_type;
+
+  BEGIN
+    SELECT s.tipo_trans, s.cod_id, i.instancia, r.numregistro
+      INTO l_instan
+      FROM operacion.siac_postventa_proceso s,
+           operacion.siac_instancia         i,
+           regvtamentab                     r
+     WHERE s.idprocess = i.idprocess
+       AND r.numslc = i.instancia
+       AND i.tipo_instancia = 'PROYECTO DE POSTVENTA'
+       AND s.idprocess = g_idprocess;
+
+    RETURN l_instan;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'get_inf_instancia: ' ||
+                              SQLERRM);
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE set_hist_srv_cp IS
+    l_instan            OPERACION.PQ_SIAC_POSTVENTA.instan_in_type;
+    l_siac_cambio_plan historico.siac_cambio_plan%ROWTYPE;
+
+    CURSOR cp_cur IS
+      SELECT 'B' est,
+             b.pid,
+             i.estinsprd,
+             b.numslc,
+             i.codsrv,
+             (SELECT e.tipequ FROM equcomxope e WHERE e.codequcom = i.codequcom) tipequ
+        FROM reginsprdbaja b, insprd i
+       WHERE b.pid = i.pid
+         AND b.numregistro = l_instan.numregistro
+      UNION
+      SELECT 'A' est,
+             i.pid,
+             i.estinsprd,
+             i.numslc,
+             i.codsrv,
+             (SELECT e.tipequ FROM equcomxope e WHERE e.codequcom = i.codequcom) tipequ
+        FROM insprd i
+       WHERE i.numslc = l_instan.numslc;
+
+  BEGIN
+    l_instan := get_inf_instancia();
+
+    IF 'SIAC-HFC-CAMBIO_PLAN' = l_instan.tipotrans THEN
+      FOR cp_rec IN cp_cur LOOP
+        l_siac_cambio_plan.cod_id      := l_instan.cod_id;
+        l_siac_cambio_plan.pid         := cp_rec.pid;
+        l_siac_cambio_plan.estinsprd   := cp_rec.estinsprd;
+        l_siac_cambio_plan.codsrv      := cp_rec.codsrv;
+        l_siac_cambio_plan.tipequ      := cp_rec.tipequ;
+        l_siac_cambio_plan.numregistro := l_instan.numregistro;
+        l_siac_cambio_plan.numslc      := cp_rec.numslc;
+        l_siac_cambio_plan.tipo        := cp_rec.est;
+        l_siac_cambio_plan.idprocess   := g_idprocess;
+
+        INSERT INTO historico.siac_cambio_plan VALUES l_siac_cambio_plan;
+
+      --COMMIT; --5.0
+
+      END LOOP;
+    END IF;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'set_hist_srv_cp: ' ||
+                              SQLERRM);
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE has_active_services IS
+    l_count PLS_INTEGER;
+
+  BEGIN
+    SELECT COUNT(*)
+      INTO l_count
+      FROM operacion.siac_postventa_proceso p, sales.sot_sisact s, inssrv i
+     WHERE p.idprocess = g_idprocess
+       AND p.cod_id = s.cod_id
+       AND s.numslc = i.numslc
+       AND i.estinssrv IN (1, 2);
+
+    IF l_count = 0 THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              'EL PROYECTO DE ORIGEN NO TIENE SERVICIOS');
+    END IF;
+  END;
+  /* **********************************************************************************************/
+  PROCEDURE p_lista_operador(ac_prob_cur OUT gc_salida) IS
+    lc_solu_cur gc_salida;
+  BEGIN
+
+    OPEN lc_solu_cur FOR
+      SELECT IDCARRIER, DESCRIPCION OPERADOR
+        FROM PRECARRIER
+       ORDER BY IDCARRIER;
+
+    ac_prob_cur := lc_solu_cur;
+
+--<INI 14.0>
+  EXCEPTION
+    WHEN OTHERS THEN
+       RAISE_APPLICATION_ERROR(-20000,
+                                  $$PLSQL_UNIT || '.' || 'p_lista_operador' ||
+                                  ' -- ' || SQLERRM);
+--<FIN 14.0>       
+  END p_lista_operador;
+  /* **********************************************************************************************/
+
+  procedure p_validad_transaccion(v_customer_id in sales.cliente_sisact.customer_id%type,
+                                  v_tipotrans   in varchar2,
+                                  v_error_code  out number,
+                                  v_error_msg   out varchar2) is
+    ls_codcli vtatabcli.codcli%type;
+    lv_valida number;
+  
+  begin
+    v_error_code := 0;
+    v_error_msg  := null;
+    begin
+      select max(codcli)
+        into ls_codcli
+        from sales.cliente_sisact
+       where customer_id = v_customer_id;
+    
+    exception
+      when others then
+        v_error_code := 1;
+        v_error_msg  := 'El cliente no existe';
+    end;
+  
+    select count(*)
+      into lv_valida
+      from solot s, estsol e
+     where s.codcli = ls_codcli
+       and s.tiptra in (select o.codigon
+                          from opedd o, tipopedd t
+                         where o.tipopedd = t.tipopedd
+                           and t.abrev = 'TIPO_TRANS_SIAC'
+                           and o.codigoc = '1')
+       and s.estsol = e.estsol
+       and e.estsol not in (select d.codigon
+                              from tipopedd c, opedd d
+                             where c.abrev = 'ESTADO_SOT'
+                               and c.tipopedd = d.tipopedd);
+  
+    if lv_valida > 0 then
+      v_error_code := 3;
+      v_error_msg  := 'Ya existe una transacción en proceso, SOT';
+    end if;
+  
+  end;
+  ----------------------------------------------------------------------------------
+  procedure set_siac_instancia(p_idprocess      siac_instancia.idprocess%type,
+                               p_tipo_postventa siac_instancia.tipo_postventa%type,
+                               p_tipo_instancia siac_instancia.tipo_instancia%type,
+                               p_instancia      siac_instancia.instancia%type) is
+
+    l_instancia siac_instancia%rowtype;
+
+  begin
+    l_instancia.idprocess      := p_idprocess;
+    l_instancia.tipo_postventa := p_tipo_postventa;
+    l_instancia.tipo_instancia := p_tipo_instancia;
+    l_instancia.instancia      := p_instancia;
+
+    insert_siac_instancia(l_instancia);
+
+  exception
+    when others then
+      raise_application_error(-20000,
+                              $$plsql_unit ||
+                              '.set_siac_instancia(p_idprocess => ' ||
+                              p_idprocess || ', p_tipo_postventa => ' ||
+                              p_tipo_postventa || ', p_tipo_instancia => ' ||
+                              p_tipo_instancia || ', p_instancia => ' ||
+                              p_instancia || ') ' || sqlerrm);
+  end;
+  ----------------------------------------------------------------------------------
+  procedure insert_siac_instancia(p_siac_instancia siac_instancia%rowtype) is
+
+  begin
+    insert into operacion.siac_instancia
+      (idinstancia, idprocess, tipo_postventa, tipo_instancia, instancia)
+    values
+      (p_siac_instancia.idinstancia,
+       p_siac_instancia.idprocess,
+       p_siac_instancia.tipo_postventa,
+       p_siac_instancia.tipo_instancia,
+       p_siac_instancia.instancia);
+
+  exception
+    when others then
+      raise_application_error(-20000,
+                              $$plsql_unit || '.' || 'insert_siac_instancia' ||
+                              sqlerrm);
+  end;
+  ----------------------------------------------------------------------------------
+  procedure set_int_negocio_instancia(p_idprocess   sales.int_negocio_instancia.idprocess%type,
+                                      p_instancia   sales.int_negocio_instancia.instancia%type,
+                                      p_idinstancia sales.int_negocio_instancia.idinstancia%type) is
+
+    l_instancia sales.int_negocio_instancia%rowtype;
+
+  begin
+    l_instancia.idprocess   := p_idprocess;
+    l_instancia.instancia   := p_instancia;
+    l_instancia.idinstancia := p_idinstancia;
+    l_instancia.tipo        := 'N';
+    l_instancia.origen      := 'SIAC';
+
+    insert_int_negocio_instancia(l_instancia);
+
+  exception
+    when others then
+      raise_application_error(-20000,
+                              $$plsql_unit ||
+                              '.set_int_negocio_instancia(p_idprocess => ' ||
+                              p_idprocess || ', p_instancia => ' || p_instancia ||
+                              ', p_idinstancia => ' || p_idinstancia || ') ' ||
+                              sqlerrm);
+  end;
+  ----------------------------------------------------------------------------------
+  procedure insert_int_negocio_instancia(p_int_negocio_instancia sales.int_negocio_instancia%rowtype) is
+
+  begin
+    insert into sales.int_negocio_instancia
+      (idprocess, instancia, idinstancia, tipo, origen)
+    values
+      (p_int_negocio_instancia.idprocess,
+       p_int_negocio_instancia.instancia,
+       p_int_negocio_instancia.idinstancia,
+       p_int_negocio_instancia.tipo,
+       p_int_negocio_instancia.origen);
+
+  exception
+    when others then
+      raise_application_error(-20000,
+                              $$plsql_unit || '.' ||
+                              'insert_int_negocio_instancia' || sqlerrm);
+  end;
+  ----------------------------------------------------------------------------------
+END;
+/

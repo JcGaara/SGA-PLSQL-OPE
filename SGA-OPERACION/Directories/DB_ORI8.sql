@@ -1,0 +1,5 @@
+CREATE OR REPLACE DIRECTORY 
+DB_ORI8 AS 
+'/u81/arch';
+
+

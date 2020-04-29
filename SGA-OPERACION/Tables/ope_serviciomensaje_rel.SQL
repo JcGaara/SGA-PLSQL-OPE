@@ -1,0 +1,45 @@
+-- Create table
+create table OPERACION.OPE_SERVICIOMENSAJE_REL
+(
+  IDSERVMENS  NUMBER not null,
+  IDMENSAJE   NUMBER,
+  TIPSRV      CHAR(4),
+  DESCRIPCION VARCHAR2(50),
+  ESTADO      NUMBER default 1,
+  USUREG      VARCHAR2(30) default USER,
+  FECREG      DATE default SYSDATE,
+  USUMOD      VARCHAR2(30) default USER,
+  FECMOD      DATE default SYSDATE
+)
+tablespace OPERACION_DAT
+;
+-- Add comments to the table 
+comment on table OPERACION.OPE_SERVICIOMENSAJE_REL
+  is 'TABLA RELACIONAL DE SERVICIOS DE MENSAJE';
+-- Add comments to the columns 
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.IDSERVMENS
+  is 'IDENTIFICADOR DEL SERVICIO DE MENSAJE';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.IDMENSAJE
+  is 'ID DEL MENSAJE';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.TIPSRV
+  is 'TIPO DE SERVICIO';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.DESCRIPCION
+  is 'DESCRIOCION';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.ESTADO
+  is 'ESTADO 1 ACTIVO 0 NO ACTIVO';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.USUREG
+  is 'USUARIO DE REGISTRO';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.FECREG
+  is 'FECHA DE REGISTRO';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.USUMOD
+  is 'USUARIO DE MODIFICACION';
+comment on column OPERACION.OPE_SERVICIOMENSAJE_REL.FECMOD
+  is 'FECHA DE MODIFICACION';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table OPERACION.OPE_SERVICIOMENSAJE_REL
+  add constraint PK_SERVICIOMENSAJE_REL primary key (IDSERVMENS)
+  using index 
+  tablespace OPERACION_DAT
+  ;
+
+grant delete on operacion.ope_serviciomensaje_rel to R_PROD;

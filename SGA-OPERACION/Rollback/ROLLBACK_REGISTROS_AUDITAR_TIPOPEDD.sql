@@ -1,0 +1,3 @@
+delete from OPERACION.OPEDD where TIPOPEDD IN (select TIPOPEDD from OPERACION.TIPOPEDD where abrev = 'APROV_ESTADO_FIBRA_LOG');
+delete from OPERACION.TIPOPEDD where abrev = 'APROV_ESTADO_FIBRA_LOG';
+/

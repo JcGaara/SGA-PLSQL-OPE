@@ -1,0 +1,33 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_TYSTIPSRVGRUPOCORTE_AIUD
+AFTER INSERT OR UPDATE OR DELETE
+ON OPERACION.TYSTIPSRVGRUPOCORTE REFERENCING OLD AS OLD NEW AS NEW
+FOR EACH ROW
+ /**************************************************************************
+   NOMBRE:     T_TYSTIPSRVGRUPOCORTE_AIUD
+   PROPOSITO:  Genera log
+
+   REVISIONES:
+   Ver        Fecha        Autor            Descripcion
+   ---------  ----------  ---------------   ------------------------
+   1.0        03/09/2013  Edilberto Astulle Log
+   **************************************************************************/
+DECLARE
+BEGIN
+  IF INSERTING THEN
+     INSERT INTO HISTORICO.TYSTIPSRVGRUPOCORTE_LOG
+       (IDGRUPOCORTE,TIPSRV,TIPO_ACC_LOG)
+     VALUES
+       (:NEW.IDGRUPOCORTE,:NEW.TIPSRV,'I' );
+  ELSIF UPDATING THEN
+     INSERT INTO HISTORICO.TYSTIPSRVGRUPOCORTE_LOG
+       (IDGRUPOCORTE,TIPSRV,TIPO_ACC_LOG)
+     VALUES
+       (:NEW.IDGRUPOCORTE,:NEW.TIPSRV,'U' );
+  ELSIF DELETING THEN
+     INSERT INTO HISTORICO.TYSTIPSRVGRUPOCORTE_LOG
+       (IDGRUPOCORTE,TIPSRV,TIPO_ACC_LOG)
+     VALUES
+       (:OLD.IDGRUPOCORTE,:OLD.TIPSRV,'D' );
+  END IF;
+END;
+/

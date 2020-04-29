@@ -1,0 +1,40 @@
+CREATE TABLE OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB
+(
+  IDARCHIVO     NUMBER(18)                      NOT NULL,
+  COMANDO       VARCHAR2(200 BYTE),
+  TIPO_MENSAJE  NUMBER(5),
+  TEXTO         VARCHAR2(1000 BYTE),
+  ESTADO        NUMBER(4)                       DEFAULT 1,
+  USUREG        VARCHAR2(30 BYTE)               DEFAULT USER,
+  FECREG        DATE                            DEFAULT SYSDATE,
+  USUMOD        VARCHAR2(30 BYTE)               DEFAULT USER,
+  FECMOD        DATE                            DEFAULT SYSDATE,
+  FLGMAS        CHAR(1 BYTE),
+  LOTE          NUMBER(10)
+);
+
+COMMENT ON TABLE OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB IS 'Sirve para registrar los bouquets de DTH';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.IDARCHIVO IS 'Identificador del mesaje enviado por los decos de TV Satelital';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.COMANDO IS 'Nombre del comando enviado por los decos de TV Satelital';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.TIPO_MENSAJE IS 'Tipo de mensaje enviado por los decos de TV Satelital';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.TEXTO IS 'Texto mostrado por los decos de TV Satelital';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.ESTADO IS 'Estado del mensaje de los decos de TV Satelital';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.USUREG IS 'Usuario que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.FECREG IS 'Fecha que inserto el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.USUMOD IS 'Usuario que modificó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.FECMOD IS 'Fecha que se modificó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.FLGMAS IS 'Estado de carga masiva (1:creado; 2:Procesado)';
+
+COMMENT ON COLUMN OPERACION.OPE_ARCHIVO_MENSAJE_TVSAT_CAB.LOTE IS 'Identificador de lote cargado';
+
+

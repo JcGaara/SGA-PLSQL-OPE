@@ -1,0 +1,1 @@
+ALTER TABLE OPERACION.cab_atc_cort_manu_dth ADD CONSTRAINT PK_ID_PROC_MANU PRIMARY KEY (id_proc_manu);

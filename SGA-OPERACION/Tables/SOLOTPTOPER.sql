@@ -1,0 +1,41 @@
+CREATE TABLE OPERACION.SOLOTPTOPER
+(
+  CODSOLOT       NUMBER(8)                      NOT NULL,
+  PUNTO          NUMBER(10)                     NOT NULL,
+  ORDEN          NUMBER(5)                      NOT NULL,
+  CODETA         NUMBER(5),
+  USUARIO        VARCHAR2(30 BYTE)              NOT NULL,
+  OBSERVACION    VARCHAR2(100 BYTE),
+  CODUSU         VARCHAR2(30 BYTE)              DEFAULT user                  NOT NULL,
+  FECUSU         DATE                           DEFAULT SYSDATE               NOT NULL,
+  FECSUP         DATE,
+  STASUP         NUMBER(2),
+  TIPNOCONF      NUMBER(2),
+  VBLIQUIDACION  NUMBER(1)
+);
+
+COMMENT ON TABLE OPERACION.SOLOTPTOPER IS 'Listado de personal por cada detalle de la solicitud';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.PUNTO IS 'Punto de la solicitud de ot';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.ORDEN IS 'Orden de la tabla';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.CODETA IS 'Codigo de la etapa';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.USUARIO IS 'Usuario responsable';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.FECSUP IS 'Fecha de supervisión de campo';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.STASUP IS 'Status de supervisión de campo: Conforme y No Conforme';
+
+COMMENT ON COLUMN OPERACION.SOLOTPTOPER.TIPNOCONF IS 'Tipificación de No Conformidad';
+
+

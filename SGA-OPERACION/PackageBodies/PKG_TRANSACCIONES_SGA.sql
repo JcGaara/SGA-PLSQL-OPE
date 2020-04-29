@@ -1,0 +1,1857 @@
+CREATE OR REPLACE PACKAGE BODY OPERACION.PKG_TRANSACCIONES_SGA IS
+  /************************************************************************************************
+  NOMBRE:     OPERACION.PKG_TRANSACCIONES_FITEL
+  PROPOSITO:  Procesos de servicios FITEL
+
+  REVISIONES:
+   Version   Fecha          Autor            Solicitado por      Descripcion
+   -------- ----------  ------------------   -----------------   ------------------------
+   1.0      26/08/2019                                           [IDEA-140458 - Fitel]
+
+  /************************************************************************************************/
+
+  /****************************************************************
+  '* NOMBRE SP: SGASI_CARGA_EQUIPO
+  '* PROPÓSITO: REALIZAR LA CARGA DE LOS EQUIPOS PARA LA LIQUIDACIÓN
+  '* INPUT: <PI_IDTAREAWF>     - ID DE LA TAREA WF
+            <PI_IDWF>          - ID DE LA WF
+            <PI_TAREA>         - ID DE TAREA.
+            <PI_TAREADEF>      - ID DE LA DEFINICION DE TAREA.
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 22/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASI_CARGA_EQUIPO(PI_IDTAREAWF IN NUMBER,
+                               PI_IDWF      IN NUMBER,
+                               PI_TAREA     IN NUMBER,
+                               PI_TAREADEF  IN NUMBER) IS
+    CN_ORDEN       NUMBER;
+    VN_PUNTO       NUMBER;
+    CN_CODSOLOT    SOLOT.CODSOLOT%TYPE;
+    VN_PUNTO_ORI   NUMBER;
+    VN_PUNTO_DES   NUMBER;
+    VV_OBSERVACION VARCHAR2(200);
+    CV_NUMSLC      VTATABSLCFAC.NUMSLC%TYPE;
+    CN_TIPTRS      TIPTRABAJO.TIPTRS%TYPE;
+    CN_IDAGENDA    AGENDAMIENTO.IDAGENDA%TYPE;
+    VN_CANTIDAD    SOLOTPTOEQU.CANTIDAD%TYPE;
+    VN_TIPPRP      SOLOTPTOEQU.TIPPRP%TYPE;
+    VN_COSTO       SOLOTPTOEQU.COSTO%TYPE;
+    VN_I           NUMBER;
+    VN_FLGINGRESO  NUMBER;
+    VN_NUM_EQUIPOS NUMBER;
+    VV_SERIE       OPERACION.SOLOTPTOEQU.NUMSERIE%TYPE;
+    VN_MAC         OPERACION.SOLOTPTOEQU.MAC%TYPE;
+    CN_TIPTRA      NUMBER;
+    VN_ERROR_MSG   VARCHAR2(4000);
+
+    --equipos en venta inicial
+    CURSOR CUR_EQU(CV_TIPSRV VARCHAR2) IS
+      SELECT A.IDPAQ,
+             A.CODEQUCOM,
+             EQU.TIPEQU TIPEQUOPE,
+             A.CANTIDAD CANTIDAD,
+             A.PRELIS_SRV COSTO,
+             DECODE(COM.FLG_RECUPERABLE, 'SI', 1, 0) RECUPERABLE,
+             (SELECT CODIGON
+                FROM OPEDD
+               WHERE TIPOPEDD = 197
+                 AND TRIM(CODIGOC) = TRIM(M.COD_SAP)) CODETA,
+             A.IDDET
+        FROM VTADETPTOENL A,
+             VTADETPTOENL B,
+             TYSTABSRV    C,
+             EQUCOMXOPE   EP,
+             TIPEQU       EQU,
+             ALMTABMAT    M,
+             VTAEQUCOM    COM
+       WHERE A.CODEQUCOM IS NOT NULL
+         AND A.CODEQUCOM = EP.CODEQUCOM
+         AND A.NUMSLC = CV_NUMSLC
+         AND A.NUMSLC = B.NUMSLC
+         AND A.NUMPTO_PRIN = B.NUMPTO
+         AND B.CODSRV = C.CODSRV
+         AND C.TIPSRV = CV_TIPSRV
+         AND EP.CODTIPEQU = EQU.CODTIPEQU
+         AND EQU.CODTIPEQU = M.CODMAT
+         AND EP.CODEQUCOM = COM.CODEQUCOM
+       ORDER BY EQU.CODTIPEQU;
+
+    CURSOR CUR_TIPSRV IS
+      SELECT I.TIPSRV
+        FROM OPERACION.INSSRV I
+       WHERE I.CODINSSRV IN
+             (SELECT SP.CODINSSRV
+                FROM OPERACION.SOLOTPTO SP
+               WHERE SP.CODSOLOT = CN_CODSOLOT);
+
+  BEGIN
+    SELECT A.CODSOLOT, T.TIPTRS, T.TIPTRA, B.NUMSLC
+      INTO CN_CODSOLOT, CN_TIPTRS, CN_TIPTRA, CV_NUMSLC
+      FROM WF A, SOLOT B, TIPTRABAJO T
+     WHERE A.IDWF = PI_IDWF
+       AND A.CODSOLOT = B.CODSOLOT
+       AND B.TIPTRA = T.TIPTRA
+       AND A.VALIDO = 1;
+
+    SELECT MAX(IDAGENDA)
+      INTO CN_IDAGENDA
+      FROM AGENDAMIENTO
+     WHERE CODSOLOT = CN_CODSOLOT;
+
+    --solo se insertan registros si es instalacion
+    FOR C_T IN CUR_TIPSRV LOOP
+      OPERACION.P_GET_PUNTO_PRINC_SOLOT(CN_CODSOLOT,
+                                        VN_PUNTO,
+                                        VN_PUNTO_ORI,
+                                        VN_PUNTO_DES,
+                                        C_T.TIPSRV);
+      SELECT COUNT(1)
+        INTO VN_NUM_EQUIPOS
+        FROM SOLOTPTOEQU
+       WHERE CODSOLOT = CN_CODSOLOT
+         AND PUNTO = VN_PUNTO;
+      --si ya tiene equipos cargados no se inserta
+      IF VN_NUM_EQUIPOS = 0 THEN
+        --carga de equipos
+        FOR C_E IN CUR_EQU(C_T.TIPSRV) LOOP
+
+          SELECT NVL(MAX(ORDEN), 0) + 1
+            INTO CN_ORDEN
+            FROM SOLOTPTOEQU
+           WHERE CODSOLOT = CN_CODSOLOT
+             AND PUNTO = VN_PUNTO;
+
+          VV_OBSERVACION := NULL;
+          VN_COSTO       := C_E.COSTO;
+          VN_TIPPRP      := 0;
+          VN_CANTIDAD    := C_E.CANTIDAD;
+
+          FOR VN_I IN 1 .. C_E.CANTIDAD LOOP
+            INSERT INTO SOLOTPTOEQU
+              (CODSOLOT,
+               PUNTO,
+               ORDEN,
+               TIPEQU,
+               CANTIDAD,
+               TIPPRP,
+               COSTO,
+               FLGSOL,
+               CODETA,
+               TRAN_SOLMAT,
+               OBSERVACION,
+               FECFDIS,
+               INSTALADO,
+               FLG_INGRESO,
+               FLGINV,
+               IDAGENDA,
+               FECINS,
+               RECUPERABLE,
+               ESTADO,
+               CODEQUCOM,
+               IDDET,
+               NUMSERIE,
+               MAC)
+            VALUES
+              (CN_CODSOLOT,
+               VN_PUNTO,
+               CN_ORDEN,
+               C_E.TIPEQUOPE,
+               VN_CANTIDAD,
+               VN_TIPPRP,
+               VN_COSTO,
+               1,
+               C_E.CODETA,
+               NULL,
+               VV_OBSERVACION,
+               SYSDATE,
+               1,
+               VN_FLGINGRESO,
+               1,
+               CN_IDAGENDA,
+               SYSDATE,
+               C_E.RECUPERABLE,
+               4,
+               C_E.CODEQUCOM,
+               C_E.IDDET,
+               VV_SERIE,
+               VN_MAC);
+
+            CN_ORDEN := CN_ORDEN + 1;
+
+          END LOOP;
+        END LOOP;
+
+      ELSE
+        --se actualiza con agenda
+        UPDATE SOLOTPTOEQU
+           SET IDAGENDA = CN_IDAGENDA
+         WHERE CODSOLOT = CN_CODSOLOT;
+      END IF;
+    END LOOP;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASI_CARGA_EQUIPO: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+
+      SGASI_TRAZABILIDAD_LOG(CN_CODSOLOT,
+                             CN_TIPTRA,
+                             PI_TAREA,
+                             NULL,
+                             VN_ERROR_MSG);
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'SGASI_CARGA_EQUIPO' ||
+                              ' -- ' || SQLERRM);
+  end SGASI_CARGA_EQUIPO;
+  /****************************************************************
+  '* NOMBRE FUN : SGAS_FUN_VALIDA_TRANS
+  '* PROPÓSITO: VALIDA EL TIPO DE TRANSACCIÓN DE VENTA O POSTVENTA
+  '* OUTPUT: FLAG DE VALIDACION
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 02/09/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  FUNCTION SGAS_FUN_VALIDA_TRANS(PI_CODSOLOT OPERACION.SOLOT.CODSOLOT%TYPE,
+                                 PI_CID      OPERACION.INSSRV.CID%TYPE,
+                                 PI_ABREV    VARCHAR2,
+                                 PI_FLAG     NUMBER) RETURN NUMBER IS
+
+    VN_CANT NUMBER;
+
+  BEGIN
+
+    IF PI_CODSOLOT IS NOT NULL THEN
+      SELECT COUNT(DISTINCT S.CODSOLOT)
+        INTO VN_CANT
+        FROM SOLOT S
+       WHERE EXISTS
+       (SELECT 1
+                FROM OPEDD O, TIPOPEDD T
+               WHERE T.TIPOPEDD = O.TIPOPEDD
+                 AND UPPER(T.ABREV) = 'TRANS_TIPTRA_SGA'
+                 AND NVL(O.ABREVIACION, '-999') = NVL(PI_ABREV, '-999')
+                 AND (O.CODIGON_AUX = NVL(PI_FLAG, O.CODIGON_AUX) OR
+                     NVL(O.CODIGON_AUX, '-999') = NVL(PI_FLAG, '-999'))
+                 AND O.CODIGON = S.TIPTRA)
+         AND S.CODSOLOT = PI_CODSOLOT;
+    ELSIF PI_CID IS NOT NULL THEN
+      SELECT COUNT(DISTINCT I.CID)
+        INTO VN_CANT
+        FROM SOLOT S, SOLOTPTO PTO, INSSRV I
+       WHERE S.CODSOLOT = PTO.CODSOLOT
+         AND PTO.CODINSSRV = I.CODINSSRV
+         AND I.CID = PI_CID
+         AND EXISTS
+       (SELECT 1
+                FROM OPEDD O, TIPOPEDD T
+               WHERE T.TIPOPEDD = O.TIPOPEDD
+                 AND UPPER(T.ABREV) = 'TRANS_TIPTRA_SGA'
+                 AND NVL(O.ABREVIACION, '-999') = NVL(PI_ABREV, '-999')
+                 AND (O.CODIGON_AUX = NVL(PI_FLAG, O.CODIGON_AUX) OR
+                     NVL(O.CODIGON_AUX, '-999') = NVL(PI_FLAG, '-999'))
+                 AND O.CODIGON = S.TIPTRA);
+    ELSE
+      RETURN 0;
+    END IF;
+    RETURN VN_CANT;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RETURN 0;
+  END SGAS_FUN_VALIDA_TRANS;
+  /****************************************************************
+  '* Nombre FUN : SGAS_FUN_SERV_ADIC
+  '* PROPÓSITO: Valida si la CID tiene servicio adicional
+  '* OUTPUT: Flag de validacion
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 06/09/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  FUNCTION SGAS_FUN_SERV_ADIC(PI_CID OPERACION.INSSRV.CID%TYPE) RETURN NUMBER IS
+
+    VN_CANT      NUMBER;
+    VN_ERROR_MSG VARCHAR2(4000);
+  BEGIN
+
+    SELECT COUNT(DISTINCT ENL.CODSRV)
+      INTO VN_CANT
+      FROM VTADETPTOENL ENL, SOLOT S, SOLOTPTO PTO, INSSRV I
+     WHERE ENL.NUMSLC = S.NUMSLC
+       AND S.CODSOLOT = PTO.CODSOLOT
+       AND PTO.CODINSSRV = I.CODINSSRV
+       AND I.CID = PI_CID
+       AND ENL.FLGSRV_PRI = 0
+       AND ENL.CODEQUCOM IS NULL;
+
+    RETURN VN_CANT;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGAS_FUN_SERV_ADIC: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+
+      SGASI_TRAZABILIDAD_LOG(null, NULL, NULL, PI_CID, VN_ERROR_MSG);
+
+  END SGAS_FUN_SERV_ADIC;
+  /****************************************************************
+  '* NOMBRE SP: SGASS_VALIDA_APROVISION
+  '* PROPÓSITO: REALIZAR LA VALIDACIÓN DE PROVISIÓN EN LA IL
+  '* INPUT: <PI_IDTAREAWF>     - ID DE LA TAREA WF
+            <PI_IDWF>          - ID DE LA WF
+            <PI_TAREA>         - ID DE TAREA.
+            <PI_TAREADEF>      - ID DE LA DEFINICION DE TAREA.
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_VALIDA_APROVISION(PI_IDTAREAWF IN NUMBER,
+                                    PI_IDWF      IN NUMBER,
+                                    PI_TAREA     IN NUMBER,
+                                    PI_TAREADEF  IN NUMBER) IS
+    VN_CODSOLOT  SOLOT.CODSOLOT%TYPE;
+    C_ESTSOL     SOLOT.ESTSOL%TYPE;
+    VN_TIPTRA    SOLOT.TIPTRA%TYPE;
+    VN_ERROR_MSG VARCHAR2(4000);
+  BEGIN
+
+    SGASS_OBTIENE_SOT(PI_IDWF, VN_CODSOLOT, VN_TIPTRA);
+    SELECT ESTSOL INTO C_ESTSOL FROM SOLOT WHERE CODSOLOT = VN_CODSOLOT;
+    --Cambia de estado (Atendido)
+    OPERACION.PQ_SOLOT.P_CHG_ESTADO_SOLOT(VN_CODSOLOT, 29, C_ESTSOL, NULL);
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_VALIDA_APROVISION: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT,
+                             VN_TIPTRA,
+                             PI_TAREA,
+                             NULL,
+                             VN_ERROR_MSG);
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' ||
+                              'SGASS_VALIDA_APROVISION' || ' -- ' ||
+                              SQLERRM);
+  END SGASS_VALIDA_APROVISION;
+
+  /****************************************************************
+  '* NOMBRE SP: SGASI_TRAZABILIDAD_LOG
+  '* PROPÓSITO: REALIZA EL REGISTRO EL LOG DE ERROR DE TRANSACCION
+  '* INPUT: <PI_CODSOLOT>     - SOLICITUD DE TRABAJO
+            <PI_TIPTRA>       - TIPO DE TAREA
+            <PI_ID_TAREA>     - ID DE TAREA.
+            <PI_CID>          - ID DE CID.
+            <PI_MSG_ERR>      - MENSAJE DE ERROR
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT IN NUMBER,
+                                   PI_TIPTRA   IN NUMBER,
+                                   PI_ID_TAREA IN NUMBER,
+                                   PI_CID      IN NUMBER,
+                                   PI_MSG_ERR  IN OPERACION.SGAT_APROVISION_LOG.SGAV_MENSAJE%TYPE) IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    CV_TAREA_DESC OPEWF.tareawfdef.DESCRIPCION%TYPE;
+    VN_CANT       NUMBER;
+    CV_DSCTIPTRA  OPERACION.TIPTRABAJO.DESCRIPCION%TYPE;
+    CN_TIPTRA     OPERACION.TIPTRABAJO.TIPTRA%TYPE;
+  BEGIN
+
+    IF PI_ID_TAREA IS NOT NULL THEN
+      SELECT DESCRIPCION
+        INTO CV_TAREA_DESC
+        FROM TAREAWFDEF
+       WHERE TAREA = PI_ID_TAREA;
+    ELSE
+      CV_TAREA_DESC := VV_DESC_TRANS;
+    END IF;
+
+    BEGIN
+      SELECT T.DESCRIPCION
+        INTO CV_DSCTIPTRA
+        FROM OPERACION.TIPTRABAJO T
+       WHERE T.TIPTRA = PI_TIPTRA;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        IF PI_CODSOLOT IS NOT NULL THEN
+          SELECT T.DESCRIPCION, T.TIPTRA
+            INTO CV_DSCTIPTRA, CN_TIPTRA
+            FROM OPERACION.TIPTRABAJO T, OPERACION.SOLOT S
+           WHERE S.TIPTRA = T.TIPTRA
+             AND S.CODSOLOT = PI_CODSOLOT;
+        END IF;
+    END;
+
+    SELECT COUNT(1)
+      INTO VN_CANT
+      FROM OPERACION.SGAT_APROVISION_LOG L
+     WHERE L.SGAN_CODSOLOT = PI_CODSOLOT
+        OR L.SGAN_CID = PI_CID;
+
+    IF VN_CANT > 0 THEN
+      UPDATE OPERACION.SGAT_APROVISION_LOG L
+         SET L.SGAN_ID_TAREA = PI_ID_TAREA,
+             L.SGAV_TAREA    = CV_TAREA_DESC,
+             L.SGAV_MENSAJE  = PI_MSG_ERR,
+             L.SGAV_USUARIO  = USER,
+             L.SGAD_FECREG   = SYSDATE
+       WHERE L.SGAN_CODSOLOT = PI_CODSOLOT
+          OR L.SGAN_CID = PI_CID;
+    ELSE
+      INSERT INTO OPERACION.SGAT_APROVISION_LOG L
+        (SGAN_CODSOLOT,
+         sgav_tiptra,
+         sgav_dsctiptra,
+         sgan_id_tarea,
+         sgav_tarea,
+         sgav_mensaje)
+      VALUES
+        (PI_CODSOLOT,
+         NVL(PI_TIPTRA, CN_TIPTRA),
+         CV_DSCTIPTRA,
+         PI_ID_TAREA,
+         CV_TAREA_DESC,
+         PI_MSG_ERR);
+    END IF;
+
+    COMMIT;
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' ||
+                              'SGASI_TRAZABILIDAD_LOG' || ' -- ' || SQLERRM);
+
+  END SGASI_TRAZABILIDAD_LOG;
+  /****************************************************************
+  '* NOMBRE SP: SGASS_OBTIENE_SOT
+  '* PROPÓSITO: REALIZAR LA VALIDACIÓN DE PROVISIÓN EN LA IL
+  '* INPUT: <PI_IDWF>          - ID DE LA WF
+            <PI_CODSOLOT>      - CODIGO DE LA SOT.
+            <PI_TIPTRA>        - TIPO DE TRABAJO.
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_OBTIENE_SOT(PI_IDWF     IN WF.IDWF%TYPE,
+                              PI_CODSOLOT OUT NUMBER,
+                              PI_TIPTRA   OUT NUMBER) IS
+  BEGIN
+
+    SELECT S.CODSOLOT, S.TIPTRA
+      INTO PI_CODSOLOT, PI_TIPTRA
+      FROM WF, SOLOT S
+     WHERE WF.CODSOLOT = S.CODSOLOT
+       AND IDWF = PI_IDWF
+       AND VALIDO = 1;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20000,
+                              $$PLSQL_UNIT || '.' || 'SGASS_OBTIENE_SOT: ' ||
+                              'SOT no tiene WF Asignado');
+
+  END SGASS_OBTIENE_SOT;
+
+  /****************************************************************
+  '* NOMBRE SP: SGASS_CONSULTA_EQUIPO
+  '* PROPÓSITO: CONSULTA SERIES ACTIVAS EN EL SGA
+  '* INPUT: <PV_SERIE>       - NUMERO DE SERIE
+            <PN_SOLOT>       - CODIGO DE SOLOT
+            <PN_CODIGO>      - CODIGO ERROR PROCEDIMIENTO
+            <PV_MENSAJE>     - MENSAJE ERROR PROCEDIMIENTO
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_CONSULTA_EQUIPO(PV_SERIE   IN OPERACION.SOLOTPTOEQU.NUMSERIE%TYPE,
+                                  PN_SOLOT   IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                  PN_CODIGO  OUT NUMBER,
+                                  PV_MENSAJE OUT VARCHAR2) IS
+    LN_CONT_SERIE NUMBER;
+    LN_CODSOLOT   OPERACION.SOLOT.CODSOLOT%TYPE;
+    LS_ESTDESC    OPERACION.ESTINSSRV.DESCRIPCION%TYPE;
+    VN_ERROR_MSG  VARCHAR2(4000);
+
+  BEGIN
+    SELECT COUNT(*)
+      INTO LN_CONT_SERIE
+      FROM OPERACION.SOLOTPTOEQU SPE
+     WHERE TRIM(SPE.NUMSERIE) = TRIM(PV_SERIE);
+
+    IF LN_CONT_SERIE = 0 THEN
+      PN_CODIGO  := 0;
+      PV_MENSAJE := 'SP: SGASS_CONSULTA_EQUIPO Ejecutado Correctamente.';
+    ELSIF LN_CONT_SERIE = 1 THEN
+      SELECT DISTINCT SPE.CODSOLOT
+        INTO LN_CODSOLOT
+        FROM OPERACION.SOLOTPTOEQU SPE
+       WHERE TRIM(SPE.NUMSERIE) = TRIM(PV_SERIE);
+
+      SELECT DISTINCT EST.DESCRIPCION
+        INTO LS_ESTDESC
+        FROM OPERACION.SOLOTPTO  SP,
+             OPERACION.INSSRV    INS,
+             OPERACION.ESTINSSRV EST
+       WHERE SP.CODINSSRV = INS.CODINSSRV
+         AND INS.ESTINSSRV = EST.ESTINSSRV
+         AND INS.ESTINSSRV IN (1, 2, 4)
+         AND SP.CODSOLOT = LN_CODSOLOT;
+
+      PN_CODIGO  := 1;
+      PV_MENSAJE := '[SGASS_CONSULTA_EQUIPO] - ' || 'LA SERIE YA ESTA ASIGNADA A LA SOT: ' ||
+                    TO_CHAR(LN_CODSOLOT) || ' CON ESTADO DE SERVICIO: ' || UPPER(LS_ESTDESC);
+    ELSIF LN_CONT_SERIE > 1 THEN
+      PN_CODIGO  := 2;
+      PV_MENSAJE := '[SGASS_CONSULTA_EQUIPO] - ' || 'LA SERIE YA ESTA ASIGNADA A VARIA(S) SOT ...';
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || '[SGASS_CONSULTA_EQUIPO]: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(PN_SOLOT, NULL, NULL, NULL, VN_ERROR_MSG);
+      PN_CODIGO  := VN_ERROR_E1;
+      PV_MENSAJE := VN_ERROR_MSG;
+  END;
+
+  /****************************************************************
+  '* NOMBRE SP: SGASS_CERRAR_ACTIVACION
+  '* PROPÓSITO: CIERRE DE TAREA DE ACTIVACION FITEL
+  '* INPUT: <PI_IDTAREAWF>     - ID DE LA TAREA WF
+            <PI_IDWF>          - ID DE LA WF
+            <PI_TAREA>         - ID DE TAREA.
+            <PI_TAREADEF>      - ID DE LA DEFINICION DE TAREA
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_CERRAR_ACTIVACION(PI_IDTAREAWF IN NUMBER,
+                                    PI_IDWF      IN NUMBER,
+                                    PI_TAREA     IN NUMBER,
+                                    PI_TAREADEF  IN NUMBER) IS
+
+    VN_CODSOLOT  OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_TIPTRA    OPERACION.SOLOT.TIPTRA%TYPE;
+    VN_ERROR_MSG VARCHAR2(4000);
+    LN_CODIGO    NUMBER;
+    VE_ERROR     EXCEPTION;
+    
+    CURSOR C_EQU_PROV IS
+      SELECT SPE.NUMSERIE, SPE.MAC
+        FROM OPERACION.SOLOTPTOEQU SPE
+       WHERE SPE.CODSOLOT = VN_CODSOLOT
+         AND SPE.NUMSERIE IS NOT NULL
+         AND SPE.TIPEQU IN
+             (SELECT A.CODIGON
+                FROM OPEDD A, TIPOPEDD B
+               WHERE A.TIPOPEDD = B.TIPOPEDD
+                 AND B.ABREV = 'TIPEQU_FITEL_TLF');
+
+  BEGIN
+
+    SGASS_OBTIENE_SOT(PI_IDWF, VN_CODSOLOT, VN_TIPTRA);
+
+    FOR C_1 IN C_EQU_PROV LOOP
+      UPDATE OPERACION.TABEQUIPO_MATERIAL TM
+         SET ESTADO = 1
+       WHERE TRIM(TM.NUMERO_SERIE) = TRIM(C_1.NUMSERIE);
+      
+      -- Actualizar estado de número en SGA  
+     UPDATE OPEDD O
+        SET O.CODIGOC = 'ASIGNADO'
+      WHERE O.TIPOPEDD =(SELECT TIPOPEDD FROM TIPOPEDD WHERE ABREV = 'NUMERO_FIC_FITEL')
+        AND O.CODIGON = VN_CODSOLOT
+        AND O.DESCRIPCION = C_1.MAC;
+        
+    END LOOP;
+    
+    COMMIT;
+    
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_CERRAR_ACTIVACION: ' || SQLCODE || ' ' || VN_ERROR_MSG || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VN_ERROR_MSG);
+      ROLLBACK;
+      RAISE;
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || '[SGASS_CERRAR_ACTIVACION]: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT,
+                             VN_TIPTRA,
+                             PI_TAREA,
+                             NULL,
+                             VN_ERROR_MSG);
+      ROLLBACK;
+      RAISE;
+  END;
+
+  /****************************************************************
+  '* NOMBRE SP: SGASS_LIBERAR_EQUIPO_SGA
+  '* PROPÓSITO: Libera equipo
+  '* INPUT: <AN_CODSOLOT>     - Codigo de solicitud.
+            <AN_CODIGO_RESP>  - Codigo de respueta.
+            <AV_MENSAJE_RESP> - Mensaje de respuesta.
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 28/08/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_LIBERAR_EQUIPO_SGA(AN_CODSOLOT     OPERACION.SOLOT.CODSOLOT%TYPE,
+                                     AN_CODIGO_RESP  OUT NUMBER,
+                                     AV_MENSAJE_RESP OUT VARCHAR2) IS
+   
+   VN_ERROR_MSG VARCHAR2(4000);
+   
+   CURSOR C_SOT_FITEL IS
+     SELECT DISTINCT CODSOLOT
+       FROM OPERACION.SOLOTPTO
+      WHERE CODINSSRV IN (SELECT DISTINCT CODINSSRV
+                            FROM OPERACION.SOLOTPTO
+                           WHERE CODSOLOT = AN_CODSOLOT);
+                             
+   CURSOR C_EQU_PROV(NSOT OPERACION.SOLOT.CODSOLOT%TYPE) IS
+     SELECT SPE.NUMSERIE
+       FROM OPERACION.SOLOTPTOEQU SPE
+      WHERE SPE.CODSOLOT = NSOT
+        AND SPE.TIPEQU IN
+            (SELECT A.CODIGON
+               FROM OPEDD A, TIPOPEDD B
+              WHERE A.TIPOPEDD = B.TIPOPEDD
+                AND B.ABREV = 'TIPEQU_FITEL_TLF');
+   
+   CURSOR C_EQU_NO_PROV(NSOT OPERACION.SOLOT.CODSOLOT%TYPE) IS
+     SELECT SPE.CODSOLOT, SPE.PUNTO, SPE.ORDEN
+       FROM OPERACION.SOLOTPTOEQU SPE
+      WHERE SPE.CODSOLOT = NSOT
+        AND SPE.TIPEQU NOT IN
+            (SELECT A.CODIGON
+               FROM OPEDD A, TIPOPEDD B
+              WHERE A.TIPOPEDD = B.TIPOPEDD
+                AND B.ABREV = 'TIPEQU_FITEL_TLF');
+   
+  BEGIN
+   AN_CODIGO_RESP  := VN_EJEC_OK;
+   AV_MENSAJE_RESP := 'SP: SGASS_LIBERAR_EQUIPO_SGA Ejecutado Correctamente.';
+     
+   -- Inicio Liberacion Equipos Provisionados
+   FOR C_SOT IN C_SOT_FITEL LOOP
+     FOR C_1 IN C_EQU_PROV(C_SOT.CODSOLOT) LOOP
+       UPDATE OPERACION.TABEQUIPO_MATERIAL TM
+          SET ESTADO = 0
+        WHERE TRIM(TM.NUMERO_SERIE) = TRIM(C_1.NUMSERIE);
+     END LOOP;
+   END LOOP;
+   -- Fin Liberacion Equipos Provisionados
+   
+   -- Inicio Liberacion Equipos No Provisionados
+   FOR C_SOT IN C_SOT_FITEL LOOP
+     FOR C_2 IN C_EQU_NO_PROV(C_SOT.CODSOLOT) LOOP
+       UPDATE OPERACION.SOLOTPTOEQU SP
+          SET SP.NUMSERIE = NULL
+        WHERE SP.CODSOLOT = C_2.CODSOLOT
+          AND SP.PUNTO = C_2.PUNTO
+          AND SP.ORDEN = C_2.ORDEN
+          AND SP.NUMSERIE IS NOT NULL;
+     END LOOP;
+   END LOOP;
+   -- Fin Liberacion Equipos No Provisionados
+  EXCEPTION
+   WHEN OTHERS THEN
+     VN_ERROR_MSG := $$PLSQL_UNIT || '.' || '[SGASS_LIBERAR_EQUIPO_SGA]: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                     DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+     SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VN_ERROR_MSG);
+     AN_CODIGO_RESP  := VN_ERROR_E1;
+     AV_MENSAJE_RESP := VN_ERROR_MSG;
+  END;
+ 
+  PROCEDURE SGASS_LIBERAR_IP_SGA(AN_CODSOLOT     IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                 AN_CODIGO_RESP  OUT NUMBER,
+                                 AV_MENSAJE_RESP OUT VARCHAR2) IS
+
+    VN_FICHA     SGACRM.FT_INSTDOCUMENTO.IDFICHA%TYPE;
+    VN_CODINSSRV OPERACION.SOLOTPTO.CODINSSRV%TYPE;
+    VN_PID       OPERACION.INSPRD.PID%TYPE;
+    VN_CID       OPERACION.INSSRV.CID%TYPE;
+    VN_COD_RESP  NUMBER;
+    VN_MSJ_RESP  VARCHAR2(4000);
+    VN_ERROR_MSG VARCHAR2(4000);
+    VE_ERROR EXCEPTION;
+
+  BEGIN
+    SGASS_VALIDA_FICHA(AN_CODSOLOT, VN_FICHA, VN_CODINSSRV, VN_PID, VN_CID, VN_COD_RESP, VN_MSJ_RESP);
+    IF VN_COD_RESP <> VN_EJEC_OK THEN
+      RAISE VE_ERROR;
+    END IF;
+    DELETE FROM TRAFFICVIEW.RANGOSIP IP WHERE IP.CID = VN_CID;
+    AN_CODIGO_RESP  := VN_EJEC_OK;
+    AV_MENSAJE_RESP := 'SP: SGASS_LIBERAR_IP_SGA Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      AN_CODIGO_RESP  := VN_COD_RESP;
+      AV_MENSAJE_RESP := VN_MSJ_RESP;
+    WHEN OTHERS THEN
+      AN_CODIGO_RESP := VN_ERROR_E1;
+      VN_ERROR_MSG   := $$PLSQL_UNIT || '.' || 'SGASS_LIBERAR_IP_SGA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                        DBMS_UTILITY.FORMAT_ERROR_BACKTRACE||'('||VN_MSJ_RESP||')';
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VN_ERROR_MSG);
+      AV_MENSAJE_RESP := VN_ERROR_MSG;
+  END;
+  
+  /****************************************************************
+  '* Nombre FUN : SGAS_FUN_VALIDA_IP
+  '* PROPÓSITO: Envia IP no Asignable
+  '* OUTPUT: Flag de validacion
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 14/10/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  FUNCTION SGAS_FUN_VALIDA_IP(PI_CID OPERACION.INSSRV.CID%TYPE) RETURN VARCHAR2 IS
+  
+    VN_ERROR_MSG VARCHAR2(4000);
+    LV_IP        VARCHAR2(100);
+  BEGIN
+
+  SELECT DISTINCT O.DESCRIPCION ||': '||I.NUMERO1 || '.' || I.NUMERO2 || '.' || I.NUMERO3 || '.' ||I.NUMERO4
+      INTO LV_IP
+    FROM RANGOSIP R, IPXCLASEC I,TIPOPEDD T, OPEDD O
+     WHERE R.IDRANGO = I.IDRANGO
+       AND R.CID = PI_CID
+       AND I.NUMERO1 || '.' || I.NUMERO2 || '.' || I.NUMERO3 || '.' ||
+           I.NUMERO4 = O.CODIGOC
+       AND T.TIPOPEDD = O.TIPOPEDD
+       AND T.ABREV = 'ASIG_IP/MASK_SGA'
+       AND O.ABREVIACION = 'IP_NO_ASIGNABLE';
+  
+    RETURN LV_IP;
+  
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+         RETURN '0';
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGAS_FUN_VALIDA_IP: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+
+      SGASI_TRAZABILIDAD_LOG(NULL, NULL, NULL, PI_CID, VN_ERROR_MSG);
+
+  END SGAS_FUN_VALIDA_IP;
+
+  /****************************************************************
+  '* Nombre FUN : SGAS_FUN_VAL_INSTITUCION
+  '* PROPÓSITO: Valida la intitución es Plazas
+  '* OUTPUT: Flag de validacion
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 14/10/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  FUNCTION SGAS_FUN_VAL_INSTITUCION(PI_CID OPERACION.INSSRV.CID%TYPE) RETURN NUMBER IS
+
+    VN_CANT      NUMBER;
+    VN_ERROR_MSG VARCHAR2(4000);
+  BEGIN
+
+    SELECT COUNT(DISTINCT P.IDPAQ)
+      INTO VN_CANT
+      FROM INSSRV I, VTADETPTOENL PTO, PAQUETE_VENTA P
+     WHERE I.NUMSLC = PTO.NUMSLC
+       AND PTO.IDPAQ = P.IDPAQ
+       AND P.OBSERVACION = 'Paquete PLAZAS'
+       AND I.CID = PI_CID;
+
+    RETURN VN_CANT;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGAS_FUN_VAL_INSTITUCION: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+
+      SGASI_TRAZABILIDAD_LOG(NULL, NULL, NULL, PI_CID, VN_ERROR_MSG);
+
+  END SGAS_FUN_VAL_INSTITUCION;
+
+  PROCEDURE SGASS_PRE_ACTIVACION(PI_IDTAREAWF IN NUMBER,
+                                 PI_IDWF      IN NUMBER,
+                                 PI_TAREA     IN NUMBER,
+                                 PI_TAREADEF  IN NUMBER) IS
+    VN_CODSOLOT  OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_TIPTRA    OPERACION.SOLOT.TIPTRA%TYPE;
+    VN_COD_RESP  NUMBER;
+    VV_MSJ_RESP  VARCHAR2(4000);
+    VN_ERROR_MSG VARCHAR2(4000);
+    VE_ERROR EXCEPTION;
+  BEGIN
+    /* INICIO OBTENER SOT */
+    SGASS_OBTIENE_SOT(PI_IDWF, VN_CODSOLOT, VN_TIPTRA);
+    /* INICIO OBTENER SOT */
+    /* INICIO REGISTRO SERVICIOS */
+    SGASS_REGISTRAR_SERVICIO(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    COMMIT;
+    /* FIN REGISTRO SERVICIOS */
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      ROLLBACK;
+      RAISE;
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_PRE_ACTIVACION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VN_ERROR_MSG);
+      ROLLBACK;
+      RAISE;
+  END;
+  
+  PROCEDURE SGASS_PRE_PROVISION(PI_IDTAREAWF IN NUMBER,
+                                PI_IDWF      IN NUMBER,
+                                PI_TAREA     IN NUMBER,
+                                PI_TAREADEF  IN NUMBER) IS
+    VN_CODSOLOT  OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_TIPTRA    OPERACION.SOLOT.TIPTRA%TYPE;
+    VN_COD_RESP  NUMBER;
+    VV_MSJ_RESP  VARCHAR2(4000);
+    VE_ERROR EXCEPTION;
+  BEGIN
+    /* INICIO OBTENER SOT */
+    SGASS_OBTIENE_SOT(PI_IDWF, VN_CODSOLOT, VN_TIPTRA);
+    /* INICIO OBTENER SOT */
+    /* INICIO REGISTRO SERVICIOS */
+    SGASS_REGISTRAR_SERVICIO(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN REGISTRO SERVICIOS */
+    /* INICIO ENVIO BAJA IL */
+    SGASS_PROVISION_INTERNET(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN ENVIO BAJA IL */
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_PRE_PROVISION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE||'('||VV_MSJ_RESP||')';
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+    WHEN OTHERS THEN
+      VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_PRE_PROVISION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+  END;
+  
+  PROCEDURE SGASS_POST_PROVISION(PI_IDTAREAWF IN NUMBER,
+                                 PI_IDWF      IN NUMBER,
+                                 PI_TAREA     IN NUMBER,
+                                 PI_TAREADEF  IN NUMBER) IS
+    VN_CODSOLOT OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_TIPTRA   OPERACION.SOLOT.TIPTRA%TYPE;
+    VN_ESTADO   NUMBER;
+    VN_COD_RESP NUMBER;
+    VN_BAJA     NUMBER;
+    VV_MSJ_RESP VARCHAR2(4000);
+    VE_PEND     EXCEPTION;
+    VE_ERROR    EXCEPTION;
+  BEGIN
+    /* INICIO OBTENER SOT */
+    SGASS_OBTIENE_SOT(PI_IDWF, VN_CODSOLOT, VN_TIPTRA);
+    /* FIN OBTENER SOT */
+    /* INICIO CONSULTA SERVICIO */
+    SGASS_CONSULTAR_SERVICIO(VN_CODSOLOT, VN_ESTADO, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN CONSULTA SERVICIO */
+    /* INICIO CONSULTA TRANSACCION */
+    SELECT CODIGON_AUX
+      INTO VN_BAJA
+      FROM OPERACION.OPEDD
+     WHERE TIPOPEDD = (SELECT TIPOPEDD
+                         FROM OPERACION.TIPOPEDD
+                        WHERE ABREV = 'TIPTRA_FITEL_AUTO')
+       AND CODIGON = VN_TIPTRA;
+    /* FIN CONSULTA TRANSACCION */
+    /* INICIO LIBERACION DE RECURSOS */
+    IF VN_ESTADO = 3 THEN
+      IF VN_BAJA = 1 THEN
+        -- Liberacion de Equipos
+        SGASS_LIBERAR_EQUIPO_SGA(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP); 
+        IF VN_COD_RESP <> 0 THEN
+          RAISE VE_ERROR;
+        END IF;
+        -- Liberacion de IP
+        SGASS_LIBERAR_IP_SGA(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP);
+        IF VN_COD_RESP <> 0 THEN
+          RAISE VE_ERROR;
+        END IF;
+        -- Liberacion de Numero de Serie y Telefono
+        SGASU_LIBERAR_MSISDN_SANS(VN_CODSOLOT, VN_COD_RESP, VV_MSJ_RESP);
+        
+        IF VN_COD_RESP <> 0 THEN
+          RAISE VE_ERROR;
+        END IF;
+
+      END IF;
+    ELSE
+      RAISE VE_PEND;
+    END IF;
+    COMMIT;
+    /* FIN LIBERACION DE RECURSOS */
+  EXCEPTION
+    WHEN VE_PEND THEN
+      VV_MSJ_RESP := 'Pendiente Verificacion en IL.';
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+    WHEN VE_ERROR THEN
+      VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_POST_PROVISION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                     DBMS_UTILITY.FORMAT_ERROR_BACKTRACE||'('||VV_MSJ_RESP||')';
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+    WHEN OTHERS THEN
+      VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_POST_PROVISION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                     DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, VN_TIPTRA, PI_TAREA, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+  END;
+  
+  PROCEDURE SGASS_REGISTRAR_SERVICIO(AN_CODSOLOT IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                     AN_CODIGO   OUT NUMBER,
+                                     AV_MENSAJE  OUT VARCHAR2) IS
+  
+    LN_COUNT     NUMBER;
+    VN_TIPTRA    OPERACION.SOLOT.TIPTRA%TYPE;
+    VV_CODCLI    OPERACION.SOLOT.CODCLI%TYPE;
+    VN_ERROR_MSG VARCHAR2(4000);
+  
+    CURSOR CUR_SRV IS
+      SELECT DET.CODIGOC, DET.DESCRIPCION
+        FROM OPERACION.OPEDD DET, OPERACION.TIPOPEDD CAB
+       WHERE DET.TIPOPEDD = CAB.TIPOPEDD
+         AND CAB.ABREV = VC_SERV_PROV
+         AND DET.CODIGON = VN_TIPTRA;
+  
+  BEGIN
+  
+    /* INICIO CONSULTA DE DATOS SOT */
+    SELECT CODCLI, TIPTRA
+      INTO VV_CODCLI, VN_TIPTRA
+      FROM OPERACION.SOLOT
+     WHERE CODSOLOT = AN_CODSOLOT;
+    /* FIN CONSULTA DE DATOS SOT */
+    /* INICIO INGRESAR SERVICIOS A PROVISIONAR*/
+    FOR C_SRV IN CUR_SRV LOOP
+    
+      SELECT COUNT(*)
+        INTO LN_COUNT
+        FROM OPERACION.SGAT_PROVSGA EST
+       WHERE EST.ESPRN_COD_SOLOT = AN_CODSOLOT
+         AND EST.ESPRV_COD_OPERACION = C_SRV.CODIGOC;
+    
+      IF LN_COUNT = 0 THEN
+        INSERT INTO OPERACION.SGAT_PROVSGA R
+          (ESPRV_COD_OPERACION,
+           ESPRN_COD_SOLOT,
+           ESPRC_COD_CLI,
+           ESPRN_TIPTRA,
+           ESPRN_ESTADO,
+           ESPRN_N_REENVIO,
+           ESPRN_N_REENVIO_MAX)
+        VALUES
+          (C_SRV.CODIGOC, AN_CODSOLOT, VV_CODCLI, VN_TIPTRA, 1, 0, 0);
+      END IF;
+    END LOOP;
+    /* FIN INGRESAR SERVICIOS A PROVISIONAR*/
+    AN_CODIGO  := VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_REGISTRAR_SERVICIO Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_REGISTRAR_SERVICIO: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, VN_TIPTRA, NULL, NULL, VN_ERROR_MSG);
+      AN_CODIGO  := VN_ERROR_E1;
+      AV_MENSAJE := VN_ERROR_MSG;
+  END;
+
+  PROCEDURE SGASS_CONSULTAR_SERVICIO(AN_CODSOLOT IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                     AN_ESTADO   OUT NUMBER,
+                                     AN_CODIGO   OUT NUMBER,
+                                     AV_MENSAJE  OUT VARCHAR2) IS
+    LN_REQUESTID   WEBSERVICE.SGAT_LOG_WS_SGA.REQUESTID%TYPE;
+    LN_ESTADO_SERV WEBSERVICE.SGAT_LOG_WS_SGA.ESTADO%TYPE;
+    LN_ESTADO_PROV OPERACION.SGAT_PROVSGA.ESPRN_ESTADO%TYPE;
+    LN_DESC        VARCHAR2(200);
+    VN_ERROR_MSG   VARCHAR2(4000);
+  BEGIN
+  
+    SELECT PROV.ESPRN_ESTADO
+      INTO LN_ESTADO_PROV
+      FROM OPERACION.SGAT_PROVSGA PROV
+     WHERE PROV.ESPRN_COD_SOLOT = AN_CODSOLOT;
+  
+    SELECT ESTADO, REQUESTID
+      INTO LN_ESTADO_SERV, LN_REQUESTID
+      FROM WEBSERVICE.SGAT_LOG_WS_SGA
+     WHERE ORDERNO IN (SELECT MAX(ORDERNO)
+                         FROM WEBSERVICE.SGAT_LOG_WS_SGA
+                        WHERE CODSOLOT = AN_CODSOLOT);
+  
+    SELECT TO_NUMBER(DET.CODIGOC), DET.DESCRIPCION
+      INTO AN_ESTADO, LN_DESC
+      FROM OPERACION.OPEDD DET, OPERACION.TIPOPEDD CAB
+     WHERE DET.TIPOPEDD = CAB.TIPOPEDD
+       AND CAB.ABREV = VC_SERV_EST
+       AND DET.CODIGON = LN_ESTADO_SERV;
+  
+    IF LN_ESTADO_PROV <> AN_ESTADO THEN
+      UPDATE OPERACION.SGAT_PROVSGA P
+         SET P.ESPRN_ESTADO    = AN_ESTADO,
+             P.ESPRV_MENSAJE   = LN_DESC,
+             P.ESPRV_REQUESTID = LN_REQUESTID
+       WHERE P.ESPRN_COD_SOLOT = AN_CODSOLOT;
+    END IF;
+  
+    AN_CODIGO  := VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_CONSULTAR_SERVICIO Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_CONSULTAR_SERVICIO: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VN_ERROR_MSG);
+      AN_ESTADO  := NULL;
+      AN_CODIGO  := VN_ERROR_E2;
+      AV_MENSAJE := VN_ERROR_MSG;
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_CONSULTAR_SERVICIO: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VN_ERROR_MSG);
+      AN_ESTADO  := NULL;
+      AN_CODIGO  := VN_ERROR_E1;
+      AV_MENSAJE := VN_ERROR_MSG;
+  END;
+
+  PROCEDURE SGASS_PROVISION_INTERNET(AN_CODSOLOT     IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                     AN_CODIGO_RESP  OUT NUMBER,
+                                     AV_MENSAJE_RESP OUT VARCHAR2) IS
+  
+    VE_ERROR     EXCEPTION;
+    VN_TIPTRA    OPERACION.SOLOT.TIPTRA%TYPE;
+    VV_TIPSRV    OPERACION.SOLOT.TIPSRV%TYPE;
+    LN_CODINSSRV OPERACION.INSSRV.CODINSSRV%TYPE;
+    LN_PID       OPERACION.INSPRD.PID%TYPE;
+    LN_CID       OPERACION.INSSRV.CID%TYPE;
+    LN_IDFICHA   SGACRM.FT_INSTDOCUMENTO.IDFICHA%TYPE;
+    LC_XML       CLOB;
+    LN_ESTADO    NUMBER;
+    VN_COD_RESP  NUMBER;
+    VV_MSJ_RESP  VARCHAR2(4000);
+  BEGIN
+  
+    /* INICIO VALIDACION FICHA */    
+    SGASS_VALIDA_FICHA(AN_CODSOLOT, LN_IDFICHA, LN_CODINSSRV, LN_PID, LN_CID, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN VALIDACION FICHA */
+    /* INICIO CONSULTA DE DATOS SOT */
+    SGASS_DATOS_SOT(AN_CODSOLOT, VN_TIPTRA, VV_TIPSRV, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN CONSULTA DE DATOS SOT */
+    /* INICIO ACTUALIZAR ACTION */
+    SGASS_ACTUALIZAR_ACTION(AN_CODSOLOT, VN_TIPTRA, LN_IDFICHA, VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+      RAISE VE_ERROR;
+    END IF;
+    /* FIN ACTUALIZAR ACTION */
+    /* INICIO ENVIO PROVISION IL */
+    WEBSERVICE.PKG_APROVISIONA_SGA_WS.SGASS_CONSUMO_WS(AN_CODSOLOT,LN_IDFICHA,LC_XML,VV_MSJ_RESP, VN_COD_RESP);
+    IF VN_COD_RESP <> 0 THEN
+       RAISE VE_ERROR;
+    END IF;
+    /* FIN ENVIO PROVISION IL */
+    /* INICIO CONSULTAR SERVICIO */
+    SGASS_CONSULTAR_SERVICIO( AN_CODSOLOT, LN_ESTADO ,VN_COD_RESP, VV_MSJ_RESP);
+    IF VN_COD_RESP <> 0 THEN
+       RAISE VE_ERROR;
+    END IF;
+    /* FIN CONSULTAR SERVICIO */
+    AN_CODIGO_RESP  := VN_EJEC_OK;
+    AV_MENSAJE_RESP := 'SP: SGASS_PROVISION_INTERNET Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      AN_CODIGO_RESP  := VN_COD_RESP;
+      AV_MENSAJE_RESP := VV_MSJ_RESP;
+    WHEN OTHERS THEN
+      VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_PROVISION_INTERNET: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+      AN_CODIGO_RESP  := VN_ERROR_E1;
+      AV_MENSAJE_RESP := VV_MSJ_RESP;
+  END;
+
+  PROCEDURE SGASS_DATOS_SOT(AN_CODSOLOT     IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                            AN_TIPTRA       OUT OPERACION.SOLOT.TIPTRA%TYPE,
+                            AN_TIPSRV       OUT OPERACION.SOLOT.TIPSRV%TYPE,
+                            AN_CODIGO_RESP  OUT NUMBER,
+                            AV_MENSAJE_RESP OUT VARCHAR2) IS
+  
+    VN_ERROR_MSG VARCHAR2(4000);
+  
+  BEGIN
+    SELECT TIPTRA, TIPSRV
+      INTO AN_TIPTRA, AN_TIPSRV
+      FROM OPERACION.SOLOT
+     WHERE CODSOLOT = AN_CODSOLOT;
+    AN_CODIGO_RESP  :=  VN_EJEC_OK;
+    AV_MENSAJE_RESP :=  'SP: SGASS_DATOS_SOT Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_DATOS_SOT: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, AN_TIPTRA, NULL, NULL, VN_ERROR_MSG);
+      AN_CODIGO_RESP  := VN_ERROR_E1;
+      AV_MENSAJE_RESP := VN_ERROR_MSG;
+  END;
+
+  PROCEDURE SGASS_VALIDA_RED_CNOC(PI_CID         IN OPERACION.INSSRV.CID%TYPE,
+                                  PO_CODIGO_RESP OUT NUMBER,
+                                  PO_MENSAJE     OUT VARCHAR2) IS
+  
+    VN_CONT_GEST NUMBER;
+    VN_CONT_INTE NUMBER;
+    VN_CONT_INTR NUMBER;
+  
+  BEGIN
+  
+    PO_CODIGO_RESP := VN_EJEC_OK;
+    PO_MENSAJE     := '';
+  
+    SELECT COUNT(1)
+      INTO VN_CONT_GEST
+      FROM TRAFFICVIEW.RANGOSIP
+     WHERE CID = PI_CID
+       AND OBSERVACION = 'GESTION';
+  
+    SELECT COUNT(1)
+      INTO VN_CONT_INTE
+      FROM TRAFFICVIEW.RANGOSIP
+     WHERE CID = PI_CID
+       AND OBSERVACION = 'INTERNET';
+  
+    SELECT COUNT(1)
+      INTO VN_CONT_INTR
+      FROM TRAFFICVIEW.RANGOSIP
+     WHERE CID = PI_CID
+       AND OBSERVACION = 'INTRANET';
+  
+    IF VN_CONT_GEST = 0 THEN
+      PO_CODIGO_RESP := VN_EJEC_01;
+      PO_MENSAJE     := PO_MENSAJE ||
+                        '     - Falta Definir Red de Gestion.' || chr(10);
+    END IF;
+  
+    IF VN_CONT_INTE = 0 THEN
+      PO_CODIGO_RESP := VN_EJEC_01;
+      PO_MENSAJE     := PO_MENSAJE ||
+                        '     - Falta Definir Red de Internet.' || chr(10);
+    END IF;
+  
+    IF VN_CONT_INTR = 0 AND SGAS_FUN_SERV_ADIC(PI_CID) = 1 THEN
+      PO_CODIGO_RESP := VN_EJEC_01;
+      PO_MENSAJE     := PO_MENSAJE ||
+                        '     - Falta Definir Red de Intranet.' || chr(10);
+    END IF;
+    IF PO_CODIGO_RESP = VN_EJEC_01 THEN
+      PO_MENSAJE := PO_MENSAJE ||
+                    '    (*) Revisar Configuraciones de IP, Tarea CNOC FITEL...';
+    ELSE
+      PO_MENSAJE := 'SP: SGASS_VALIDA_RED_CNOC Ejecutado Correctamente.';
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      PO_CODIGO_RESP := VN_ERROR_E1;
+      PO_MENSAJE := $$PLSQL_UNIT || '.' || 'SGASS_VALIDA_RED_CNOC: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                    DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(NULL, NULL, NULL, PI_CID, PO_MENSAJE);
+  END SGASS_VALIDA_RED_CNOC;
+
+  PROCEDURE SGASS_VALIDA_NUMERO_SANS(PI_NUMSERIE IN OPERACION.SOLOTPTOEQU.NUMSERIE%TYPE,
+                                     PI_CODSOLOT IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                     PO_NRO_TLF  OUT VARCHAR2,
+                                     PO_ESTADO   OUT NUMBER,
+                                     PO_MENSAJE  OUT VARCHAR2) IS
+    VN_COUNT    NUMBER;
+    VN_COD_RESP NUMBER;
+    VV_MSJ_RESP VARCHAR2(4000);
+    VE_ERROR EXCEPTION;
+  
+  BEGIN
+    SELECT COUNT(*)
+      INTO VN_COUNT
+      FROM OPERACION.TIPOPEDD T, OPERACION.OPEDD O
+     WHERE T.TIPOPEDD = O.TIPOPEDD
+       AND O.CODIGON  = PI_CODSOLOT
+       AND UPPER(T.ABREV) = 'NUMERO_FIC_FITEL'
+       AND UPPER(O.CODIGOC) IN ('RESERVADO', 'ASIGNADO');
+       
+    IF VN_COUNT = 0 THEN
+      -- OBTIENE NUMERO TELEFONICO DISPONIBLE
+
+      SELECT NUMERO
+        INTO PO_NRO_TLF
+        FROM (SELECT O.DESCRIPCION AS NUMERO
+                FROM OPERACION.TIPOPEDD T, OPERACION.OPEDD O
+               WHERE T.TIPOPEDD = O.TIPOPEDD
+                 AND UPPER(T.ABREV) = 'NUMERO_FIC_FITEL'
+                 AND UPPER(O.CODIGOC) = 'DISPONIBLE'
+               ORDER BY TO_NUMBER(O.DESCRIPCION) ASC)
+       WHERE ROWNUM = 1;
+
+  
+      UPDATE OPERACION.OPEDD O
+         SET O.CODIGOC = 'RESERVADO', O.CODIGON = PI_CODSOLOT
+       WHERE O.TIPOPEDD = (SELECT TIPOPEDD
+                             FROM OPERACION.TIPOPEDD
+                            WHERE ABREV = 'NUMERO_FIC_FITEL')
+         AND O.DESCRIPCION = PO_NRO_TLF;
+    ELSE
+       SELECT O.DESCRIPCION
+         INTO PO_NRO_TLF
+         FROM OPERACION.TIPOPEDD T, OPERACION.OPEDD O
+        WHERE T.TIPOPEDD = O.TIPOPEDD
+          AND O.CODIGON = PI_CODSOLOT
+          AND UPPER(T.ABREV) = 'NUMERO_FIC_FITEL'
+          AND UPPER(O.CODIGOC) IN ('RESERVADO', 'ASIGNADO');
+    END IF;
+    PO_ESTADO := VN_EJEC_OK;
+  
+  EXCEPTION
+    WHEN OTHERS THEN
+      PO_MENSAJE := 'No existe número disponible';
+      PO_ESTADO := VN_ERROR_E2;
+      SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT, NULL, NULL, NULL, PO_MENSAJE);
+  END SGASS_VALIDA_NUMERO_SANS;
+  
+  /****************************************************************
+  '* NOMBRE SP: SGASS_VALIDA_FICHA
+  '* PROPÓSITO: OBTIENE DATO Y VALIDA SI EXISTE FICHA TECNICA 
+  '* INPUT: <PI_CODSOLOT>     - CODIGO DE SOT
+            <PO_CANT_FICHA>   - VALIDA SI EXISTE FICHA 
+            <PO_PID>          - NUMERO PID
+            <PO_CID>          - CODIGO DE CIRCUITO
+            <PO_CODIGO_RESP>  - CODIGO DE RESPUESTA 
+            <PO_MENSAJE>      - MENSAJE DE RESPUESTA
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 01/10/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASS_VALIDA_FICHA(PI_CODSOLOT    IN NUMBER,
+                               PO_IDFICHA     OUT NUMBER,
+                               PO_CODINSSRV   OUT OPERACION.INSSRV.CODINSSRV%TYPE,
+                               PO_PID         OUT OPERACION.INSPRD.PID%TYPE,
+                               PO_CID         OUT OPERACION.INSSRV.CID%TYPE,
+                               PO_CODIGO_RESP OUT NUMBER,
+                               PO_MENSAJE     OUT VARCHAR2) IS
+  
+    CN_TIPTRA SOLOT.TIPTRA%TYPE;
+  
+  BEGIN
+    PO_CODIGO_RESP := VN_EJEC_OK;
+    PO_MENSAJE     := 'SP: SGASS_VALIDA_FICHA Ejecutado Correctamente.';
+  
+    SELECT I.CODINSSRV, P.PID, NVL(INS.IDFICHA, 0), S.TIPTRA, I.CID
+      INTO PO_CODINSSRV, PO_PID, PO_IDFICHA, CN_TIPTRA, PO_CID
+      FROM SOLOT S
+     INNER JOIN OPERACION.SOLOTPTO PTO
+        ON S.CODSOLOT = PTO.CODSOLOT
+     INNER JOIN INSSRV I
+        ON PTO.CODINSSRV = I.CODINSSRV
+     INNER JOIN INSPRD P
+        ON I.CODINSSRV = P.CODINSSRV
+      LEFT JOIN SGACRM.FT_INSTDOCUMENTO INS
+        ON I.CODINSSRV = INS.CODIGO1
+     WHERE I.CODSRV = P.CODSRV
+       AND S.CODSOLOT = PI_CODSOLOT
+     GROUP BY I.CODINSSRV, P.PID, S.TIPTRA, I.CID, NVL(INS.IDFICHA, 0);
+  
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      PO_CODIGO_RESP := VN_ERROR_E2;
+      PO_MENSAJE     := $$PLSQL_UNIT || '.' || 'SGASS_VALIDA_FICHA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                        DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT, CN_TIPTRA, NULL, NULL, PO_MENSAJE);
+    WHEN OTHERS THEN
+      PO_CODIGO_RESP := VN_ERROR_E1;
+      PO_MENSAJE     := $$PLSQL_UNIT || '.' || 'SGASS_VALIDA_FICHA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                        DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT, CN_TIPTRA, NULL, NULL, PO_MENSAJE);
+  END;
+
+  PROCEDURE SGASS_CREAR_FT(AN_TABLA        IN VARCHAR2,
+                           AN_CODINSSRV    IN OPERACION.INSPRD.CODINSSRV%TYPE,
+                           AN_PID          IN OPERACION.INSPRD.PID%TYPE,
+                           AN_CODSOLOT     IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                           AN_CODIGO_RESP  OUT NUMBER,
+                           AV_MENSAJE_RESP OUT VARCHAR2) IS
+  
+  BEGIN
+    SGACRM.PQ_FICHATECNICA.P_CREAR_INSTDOC(AN_TABLA,
+                                           AN_CODINSSRV,
+                                           AN_PID,
+                                           AN_CODSOLOT);
+    AN_CODIGO_RESP  := VN_EJEC_OK;
+    AV_MENSAJE_RESP := 'SP: SGASS_CREAR_FT Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      AN_CODIGO_RESP  := VN_ERROR_E1;
+      AV_MENSAJE_RESP := $$PLSQL_UNIT || '.' || 'SGASS_CREAR_FT: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, AV_MENSAJE_RESP);
+  END;
+
+  /****************************************************************
+  '* NOMBRE SP: SGASU_COMPARA_ACTUALIZA_FICHA
+  '* PROPÓSITO: COMPARA Y ACTUALIZA LA FICHA TECNCA
+  '* INPUT: <PI_IDFICHA>      - ID DE LA FICHA TECNCA 
+            <PI_CODSOLOT>     - CODIGO DE SOT
+            <PO_CODIGO_RESP>  - CODIGO DE RESPUESTA 
+            <PO_MENSAJE>      - MENSAJE DE RESPUESTA
+  '* CREADO POR : EQUIPO DE PROYECTO FITEL
+  '* FEC CREACIÓN : 01/10/2019
+  '* FEC ACTUALIZACION :
+  '****************************************************************/
+  PROCEDURE SGASU_COMPARA_ACTUALIZA_FICHA(PI_IDFICHA     IN SGACRM.FT_INSTDOCUMENTO.IDFICHA%TYPE,
+                                          PI_CODSOLOT    IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                          PO_CODIGO_RESP OUT NUMBER,
+                                          PO_MENSAJE     OUT VARCHAR2) IS
+  
+    V_CAMPO       VARCHAR2(400);
+    LV_VALORCAMPO SGACRM.FT_CAMPO.VALORCAMPO%TYPE;
+    CN_VAL_CAMP   NUMBER;
+    CV_DESC_CAMP  VARCHAR2(300);
+    CURSOR CUR_CAMPO IS
+      SELECT INS.CODIGO1,
+             A.IDCAMPO,
+             A.TIPO,
+             A.ETIQUETA,
+             A.VALORCAMPO,
+             INS.VALORTXT,
+             B.ACTUALIZAR
+        FROM SGACRM.FT_CAMPO         A,
+             SGACRM.FT_LISTA         B,
+             SGACRM.FT_INSTDOCUMENTO INS
+       WHERE A.IDLISTA = B.IDLISTA
+         AND B.IDLISTA = INS.IDLISTA
+         AND A.IDDOCUMENTO = INS.IDDOCUMENTO
+         AND INS.IDFICHA = PI_IDFICHA
+         AND A.ESTADO = 1
+         AND B.ACTUALIZAR > 0
+       ORDER BY A.ORDEN;
+  
+  BEGIN
+    PO_CODIGO_RESP := VN_EJEC_OK;
+    PO_MENSAJE     := '';
+  
+    FOR C_CAMPO IN CUR_CAMPO LOOP
+      IF C_CAMPO.TIPO = 1 THEN
+        --CONSTANTE
+        IF NVL(C_CAMPO.VALORTXT, '-IL-9999') <>
+           NVL(C_CAMPO.VALORCAMPO, '-IL-9999') THEN
+          UPDATE SGACRM.FT_INSTDOCUMENTO INS
+             SET INS.VALORTXT = C_CAMPO.VALORCAMPO
+           WHERE INS.IDFICHA = PI_IDFICHA
+             AND INS.ETIQUETA = C_CAMPO.ETIQUETA;
+        END IF;
+      ELSIF C_CAMPO.TIPO = 2 THEN
+        --VARIABLE
+        EXECUTE IMMEDIATE C_CAMPO.VALORCAMPO
+          INTO V_CAMPO;
+      
+        IF NVL(C_CAMPO.VALORTXT, '-IL-9999') <> NVL(V_CAMPO, '-IL-9999') THEN
+          UPDATE SGACRM.FT_INSTDOCUMENTO INS
+             SET INS.VALORTXT = V_CAMPO
+           WHERE INS.IDFICHA = PI_IDFICHA
+             AND INS.ETIQUETA = C_CAMPO.ETIQUETA;
+        END IF;
+      ELSIF C_CAMPO.TIPO = 3 THEN
+        --VARIABLE PARAMETRO NUMERICO
+        IF C_CAMPO.ACTUALIZAR = 2 THEN
+          -- VALIDA LA SOT DE LA TRANSACCION
+          LV_VALORCAMPO := C_CAMPO.VALORCAMPO || ' AND S.CODSOLOT = :2';
+          EXECUTE IMMEDIATE LV_VALORCAMPO
+            INTO V_CAMPO
+            USING C_CAMPO.CODIGO1, PI_CODSOLOT;
+        ELSE
+          EXECUTE IMMEDIATE C_CAMPO.VALORCAMPO
+            INTO V_CAMPO
+            USING C_CAMPO.CODIGO1;
+        END IF;
+        IF NVL(C_CAMPO.VALORTXT, '-IL-9999') <> NVL(V_CAMPO, '-IL-9999') THEN
+          --OR (CV_VALOR IS NULL) OR (V_CAMPO IS NULL)THEN
+          UPDATE SGACRM.FT_INSTDOCUMENTO INS
+             SET INS.VALORTXT = V_CAMPO -- C_CAMPO.VALORCAMPO
+           WHERE INS.IDFICHA = PI_IDFICHA
+             AND INS.ETIQUETA = C_CAMPO.ETIQUETA;
+        
+          SELECT DISTINCT NVL(O.IDOPEDD, 0), O.DESCRIPCION
+            INTO CN_VAL_CAMP, CV_DESC_CAMP
+            FROM TIPOPEDD T
+            LEFT JOIN OPEDD O
+              ON T.TIPOPEDD = O.TIPOPEDD
+             AND O.CODIGON_AUX = 1
+             AND UPPER(TRIM(O.CODIGOC)) = UPPER(TRIM(C_CAMPO.ETIQUETA))
+           WHERE UPPER(ABREV) = 'MSJ_CAMPOS_FICHA';
+        
+          IF CN_VAL_CAMP <> 0 THEN
+            PO_CODIGO_RESP := VN_EJEC_02;
+            PO_MENSAJE     := '>>' || CV_DESC_CAMP || ': ' || CHR(10) ||
+                              '  - Valor Actual: ' || C_CAMPO.VALORTXT ||
+                              '  - Nuevo Valor: ' || V_CAMPO || CHR(10) ||
+                              PO_MENSAJE;
+          END IF;
+        END IF;
+      END IF;
+    END LOOP;
+  EXCEPTION
+    WHEN OTHERS THEN
+      PO_CODIGO_RESP := VN_ERROR_E1;
+      PO_MENSAJE     := $$PLSQL_UNIT || '.' || 'SGASU_VALIDA_ACTUALIZA_FICHA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                        DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT, NULL, NULL, NULL, PO_MENSAJE);
+  END;
+
+  PROCEDURE SGASS_VALIDA_EQUIPO_SIM(PI_CODSOLOT IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                    PO_ESTADO   OUT NUMBER,
+                                    PO_MENSAJE  OUT VARCHAR2) IS
+  
+    VN_NUMSERIE OPERACION.SOLOTPTOEQU.NUMSERIE%TYPE;
+    VN_NUMERO   OPERACION.SOLOTPTOEQU.MAC%TYPE;
+  BEGIN
+    BEGIN
+      SELECT TRIM(SE.NUMSERIE), TRIM(SE.MAC)
+        INTO VN_NUMSERIE, VN_NUMERO
+        FROM OPERACION.SOLOTPTOEQU SE,
+             OPERACION.SOLOT S,
+             OPERACION.SOLOTPTO SP,
+             OPERACION.INSSRV I,
+             OPERACION.TIPEQU T,
+             PRODUCCION.ALMTABMAT A,
+             (SELECT A.CODIGON TIPEQU, TO_NUMBER(CODIGOC) GRUPO
+                FROM OPEDD A, TIPOPEDD B
+               WHERE A.TIPOPEDD = B.TIPOPEDD
+                 AND B.ABREV = 'TIPEQU_FITEL_TLF') EQU_CONAX
+       WHERE SE.CODSOLOT = S.CODSOLOT
+         AND S.CODSOLOT = SP.CODSOLOT
+         AND SE.PUNTO = SP.PUNTO
+         AND SP.CODINSSRV = I.CODINSSRV
+         AND T.TIPEQU = SE.TIPEQU
+         AND A.CODMAT = T.CODTIPEQU
+         AND SE.CODSOLOT = PI_CODSOLOT
+         AND T.TIPEQU = EQU_CONAX.TIPEQU;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        PO_ESTADO  := VN_ERROR_E2;
+        PO_MENSAJE := '  (*) Revisar Proceso de Carga de Equipos, No Registra Datos de Serie/Numero Telf.' || chr(10);
+        RETURN;
+      WHEN OTHERS THEN
+        PO_ESTADO  := VN_ERROR_E1;
+        PO_MENSAJE := '  (*) Revisar Proceso de Carga de Equipos.' || chr(10);
+        RETURN;
+    END;
+  
+    IF VN_NUMSERIE is null then
+      PO_MENSAJE := PO_MENSAJE || '  - Falta Registrar Numero de Serie.' || chr(10);
+      PO_ESTADO  := VN_EJEC_01;
+    END IF;
+  
+    IF VN_NUMERO is null then
+      PO_MENSAJE := PO_MENSAJE || '  - Falta Registrar Numero de Telefono.' || chr(10);
+      PO_ESTADO  := VN_EJEC_01;
+    END IF;
+  
+    IF PO_ESTADO = VN_EJEC_01 THEN
+      PO_MENSAJE := PO_MENSAJE ||
+                    '    (*) Revisar Configuraciones en Provision de Internet...';
+    ELSE
+      PO_ESTADO  := VN_EJEC_OK;
+      PO_MENSAJE := 'SP: SGASS_VALIDA_EQUIPO_SIM Ejecutado Correctamente.';
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      PO_ESTADO  := VN_ERROR_E1;
+      PO_MENSAJE := $$PLSQL_UNIT || '.' || 'SGASS_VALIDA_EQUIPO_SIM: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                    DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(PI_CODSOLOT, NULL, NULL, NULL, PO_MENSAJE);
+  END SGASS_VALIDA_EQUIPO_SIM;
+
+  PROCEDURE SGASS_CONSULTA_TIMER(AN_TRANSAC      IN VARCHAR2,
+                                 AN_SEGUNDOS     OUT NUMBER,
+                                 AN_CODIGO_RESP  OUT NUMBER,
+                                 AV_MENSAJE_RESP OUT VARCHAR2) IS
+  
+    LN_SEGUNDO NUMBER(10);
+    CURSOR CUR_TEMP IS
+      SELECT OP.DESCRIPCION, OP.CODIGON
+        FROM OPERACION.TIPOPEDD TIP, OPERACION.OPEDD OP
+       WHERE OP.TIPOPEDD = TIP.TIPOPEDD
+         AND TIP.ABREV = 'TIMER-FITEL'
+         AND OP.ABREVIACION = AN_TRANSAC;
+  BEGIN
+    LN_SEGUNDO := 0;
+    FOR C_TMP IN CUR_TEMP LOOP
+      IF C_TMP.DESCRIPCION = 'MINUTOS' THEN
+        LN_SEGUNDO := LN_SEGUNDO + (C_TMP.CODIGON * 60);
+      ELSIF C_TMP.DESCRIPCION = 'SEGUNDOS' THEN
+        LN_SEGUNDO := LN_SEGUNDO + C_TMP.CODIGON;
+      END IF;
+    END LOOP;
+    AN_SEGUNDOS     := LN_SEGUNDO;
+    AN_CODIGO_RESP  := VN_EJEC_OK;
+    AV_MENSAJE_RESP := 'SP: SGASS_CONSULTA_TIMER Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      AN_SEGUNDOS     := 0;
+      AN_CODIGO_RESP  := VN_ERROR_E1;
+      AV_MENSAJE_RESP := $$PLSQL_UNIT || '.' || 'SGASS_CONSULTA_TIMER: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+  END;
+
+  PROCEDURE SGASS_BAJA(AN_CODIGO OUT NUMBER, AV_MENSAJE OUT VARCHAR2) IS
+  
+    VN_CODSOLOT OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_ESTTAREA OPEWF.TAREAWF.ESTTAREA%TYPE;
+    VV_MSJ_RESP VARCHAR2(4000);
+  
+    CURSOR C_SOT_BAJA IS
+      SELECT DISTINCT CAB.CODSOLOT, DET.CODINSSRV, CAB.TIPTRA
+        FROM OPERACION.SOLOTPTO DET, OPERACION.SOLOT CAB
+       WHERE CAB.CODSOLOT = DET.CODSOLOT
+         AND CAB.TIPTRA IN (SELECT TO_NUMBER(VALOR)
+                              FROM OPERACION.CONSTANTE
+                             WHERE CONSTANTE = 'BAJA_FITEL')
+         AND CAB.ESTSOL = FND_EST_SOT_EJE
+      ORDER BY 1 ASC;
+  
+    CURSOR C_TAREAS_BAJA(SOT OPERACION.SOLOT.CODSOLOT%TYPE) IS
+      SELECT WFCPY.IDTAREAWF
+        FROM OPEWF.TAREAWFCPY WFCPY,
+             (SELECT B.CODIGON, B.CODIGON_AUX
+                FROM OPERACION.TIPOPEDD A, OPERACION.OPEDD B
+               WHERE A.TIPOPEDD = B.TIPOPEDD
+                 AND A.ABREV = 'TRANS_FITEL'
+                 AND B.ABREVIACION = 'BAJA_FITEL') CONF
+       WHERE WFCPY.IDWF IN (SELECT IDWF
+                              FROM OPEWF.WF
+                             WHERE CODSOLOT = SOT
+                               AND VALIDO = 1)
+         AND WFCPY.TAREADEF = CONF.CODIGON
+       ORDER BY CONF.CODIGON_AUX ASC;
+  
+  BEGIN
+    /*Inicio Baja Automatica */
+    FOR L_SOT_BAJA IN C_SOT_BAJA LOOP
+      BEGIN
+        VN_CODSOLOT := L_SOT_BAJA.CODSOLOT;
+        FOR L_TAREAS_BAJA IN C_TAREAS_BAJA(VN_CODSOLOT) LOOP
+          SELECT ESTTAREA
+            INTO VN_ESTTAREA
+            FROM TAREAWF
+           WHERE IDTAREAWF = L_TAREAS_BAJA.IDTAREAWF;
+          IF VN_ESTTAREA =  1 THEN 
+            OPEWF.PQ_WF.P_CHG_STATUS_TAREAWF(L_TAREAS_BAJA.IDTAREAWF, 4, 4, 0, SYSDATE, SYSDATE);
+            COMMIT;
+          END IF;
+        END LOOP;
+      EXCEPTION
+        WHEN OTHERS THEN
+          VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_BAJA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+          SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+          ROLLBACK;
+          GOTO FINAL_REG;
+      END;
+      <<FINAL_REG>>
+      EXIT WHEN C_SOT_BAJA%NOTFOUND;
+    END LOOP;
+    /*Fin Baja Automatica */
+    AN_CODIGO  :=  VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_BAJA Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      AN_CODIGO  := SQLCODE;
+      AV_MENSAJE := $$PLSQL_UNIT || '.' || 'SGASS_BAJA: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                    DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+  END;
+
+  PROCEDURE SGASS_SUSPENSION(AN_CODIGO OUT NUMBER, AV_MENSAJE OUT VARCHAR2) IS
+  
+    VN_CODSOLOT OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_ESTTAREA OPEWF.TAREAWF.ESTTAREA%TYPE;
+    VV_MSJ_RESP VARCHAR2(4000);
+  
+    CURSOR C_SOT_SUSPENSION IS
+      SELECT DISTINCT CAB.CODSOLOT, DET.CODINSSRV, CAB.TIPTRA
+        FROM OPERACION.SOLOTPTO DET, OPERACION.SOLOT CAB
+       WHERE CAB.CODSOLOT = DET.CODSOLOT
+         AND CAB.TIPTRA IN (SELECT TO_NUMBER(VALOR)
+                              FROM OPERACION.CONSTANTE
+                             WHERE CONSTANTE = 'SUSP_FITEL')
+         AND CAB.ESTSOL = FND_EST_SOT_EJE;
+  
+    CURSOR C_TAREAS_SUSPENSION(SOT OPERACION.SOLOT.CODSOLOT%TYPE) IS
+      SELECT WFCPY.IDTAREAWF
+        FROM OPEWF.TAREAWFCPY WFCPY,
+             (SELECT B.CODIGON, B.CODIGON_AUX
+                FROM OPERACION.TIPOPEDD A, OPERACION.OPEDD B
+               WHERE A.TIPOPEDD = B.TIPOPEDD
+                 AND A.ABREV = 'TRANS_FITEL'
+                 AND B.ABREVIACION = 'SUSP_FITEL') CONF
+       WHERE WFCPY.IDWF IN (SELECT IDWF
+                              FROM OPEWF.WF
+                             WHERE CODSOLOT = SOT
+                               AND VALIDO = 1)
+         AND WFCPY.TAREADEF = CONF.CODIGON
+       ORDER BY CONF.CODIGON_AUX ASC;
+  
+  BEGIN
+    /*Inicio Suspension Automatica */
+    FOR L_SOT_SUSPENSION IN C_SOT_SUSPENSION LOOP
+      BEGIN
+        VN_CODSOLOT := L_SOT_SUSPENSION.CODSOLOT;
+        FOR L_TAREAS_SUSPENSION IN C_TAREAS_SUSPENSION(VN_CODSOLOT) LOOP
+          SELECT ESTTAREA
+            INTO VN_ESTTAREA
+            FROM TAREAWF
+           WHERE IDTAREAWF = L_TAREAS_SUSPENSION.IDTAREAWF;
+           IF VN_ESTTAREA =  1 THEN
+              OPEWF.PQ_WF.P_CHG_STATUS_TAREAWF(L_TAREAS_SUSPENSION.IDTAREAWF, 4, 4, 0, SYSDATE, SYSDATE);
+              COMMIT;
+           END IF;
+        END LOOP;
+      EXCEPTION
+        WHEN OTHERS THEN
+          VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_SUSPENSION: ' ||  SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+          SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+          ROLLBACK;
+          GOTO FINAL_REG;
+      END;
+      <<FINAL_REG>>
+      EXIT WHEN C_SOT_SUSPENSION%NOTFOUND;
+    END LOOP;
+    /*Fin Suspension Automatica */
+    AN_CODIGO  := VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_SUSPENSION Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      AN_CODIGO  := SQLCODE;
+      AV_MENSAJE := $$PLSQL_UNIT || '.' || 'SGASS_SUSPENSION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                    DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+  END;
+
+  PROCEDURE SGASS_RECONEXION(AN_CODIGO OUT NUMBER, AV_MENSAJE OUT VARCHAR2) IS
+  
+    VN_CODSOLOT OPERACION.SOLOT.CODSOLOT%TYPE;
+    VN_ESTTAREA OPEWF.TAREAWF.ESTTAREA%TYPE;
+    VV_MSJ_RESP VARCHAR2(4000);
+  
+    CURSOR C_SOT_RECONEXION IS
+      SELECT DISTINCT CAB.CODSOLOT, DET.CODINSSRV, CAB.TIPTRA
+        FROM OPERACION.SOLOTPTO DET, OPERACION.SOLOT CAB
+       WHERE CAB.CODSOLOT = DET.CODSOLOT
+         AND CAB.TIPTRA IN
+             (SELECT TO_NUMBER(VALOR)
+                FROM OPERACION.CONSTANTE
+               WHERE CONSTANTE = 'RECONEX_FITEL')
+         AND CAB.ESTSOL = FND_EST_SOT_EJE;
+  
+    CURSOR C_TAREAS_RECONEXION(SOT OPERACION.SOLOT.CODSOLOT%TYPE) IS
+      SELECT WFCPY.IDTAREAWF
+        FROM OPEWF.TAREAWFCPY WFCPY,
+             (SELECT B.CODIGON, B.CODIGON_AUX
+                FROM OPERACION.TIPOPEDD A, OPERACION.OPEDD B
+               WHERE A.TIPOPEDD = B.TIPOPEDD
+                 AND A.ABREV = 'TRANS_FITEL'
+                 AND B.ABREVIACION = 'RECO_FITEL') CONF
+       WHERE WFCPY.IDWF IN (SELECT IDWF
+                              FROM OPEWF.WF
+                             WHERE CODSOLOT = SOT
+                               AND VALIDO = 1)
+         AND WFCPY.TAREADEF = CONF.CODIGON
+       ORDER BY CONF.CODIGON_AUX ASC;
+  
+  BEGIN
+    /*Inicio Reconexion Automatica */
+    FOR L_SOT_RECONEXION IN C_SOT_RECONEXION LOOP
+      BEGIN
+        VN_CODSOLOT := L_SOT_RECONEXION.CODSOLOT;
+        FOR L_TAREAS_RECONEXION IN C_TAREAS_RECONEXION(VN_CODSOLOT) LOOP
+          SELECT ESTTAREA
+            INTO VN_ESTTAREA
+            FROM TAREAWF
+           WHERE IDTAREAWF = L_TAREAS_RECONEXION.IDTAREAWF;
+           IF VN_ESTTAREA =  1 THEN
+              OPEWF.PQ_WF.P_CHG_STATUS_TAREAWF(L_TAREAS_RECONEXION.IDTAREAWF, 4, 4, 0, SYSDATE, SYSDATE);
+              COMMIT;
+           END IF;
+        END LOOP;
+      EXCEPTION
+        WHEN OTHERS THEN
+          VV_MSJ_RESP := $$PLSQL_UNIT || '.' || 'SGASS_RECONEXION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                         DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+          SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+          ROLLBACK;
+          GOTO FINAL_REG;
+      END;
+      <<FINAL_REG>>
+      EXIT WHEN C_SOT_RECONEXION%NOTFOUND;
+    END LOOP;
+    AN_CODIGO  := VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_RECONEXION Ejecutado Correctamente.';
+  EXCEPTION
+    WHEN OTHERS THEN
+      AN_CODIGO  := SQLCODE;
+      AV_MENSAJE := $$PLSQL_UNIT || '.' || 'SGASS_RECONEXION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                    DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(VN_CODSOLOT, NULL, NULL, NULL, VV_MSJ_RESP);
+      ROLLBACK;
+      RAISE;
+  END;
+
+  PROCEDURE SGASS_ACTUALIZAR_ACTION(AN_CODSOLOT IN OPERACION.SOLOT.CODSOLOT%TYPE,
+                                    AN_TIPTRA   IN OPERACION.SOLOT.TIPTRA%TYPE,
+                                    AN_FICHA    SGACRM.FT_INSTDOCUMENTO.IDFICHA%TYPE,
+                                    AN_CODIGO   OUT NUMBER,
+                                    AV_MENSAJE  OUT VARCHAR2) IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    VN_ERROR_MSG VARCHAR2(4000);
+    VN_PRIORIDAD VARCHAR2(50);
+    VN_ACTIONID  VARCHAR2(50);
+  BEGIN
+    AN_CODIGO  :=  VN_EJEC_OK;
+    AV_MENSAJE := 'SP: SGASS_ACTUALIZAR_ACTION Ejecutado Correctamente.';
+  
+    SELECT TO_CHAR(DET.CODIGOC), TO_CHAR(DET.CODIGON_AUX)
+      INTO VN_PRIORIDAD, VN_ACTIONID
+      FROM OPERACION.OPEDD DET, OPERACION.TIPOPEDD CAB
+     WHERE DET.TIPOPEDD = CAB.TIPOPEDD
+       AND CAB.ABREV = 'TIPTRA_CONFIG_IL'
+       AND DET.ABREVIACION = 'ASIGNA_PRIORITY_ACTIONID'
+       AND DET.CODIGON = AN_TIPTRA;
+  
+    UPDATE SGACRM.FT_INSTDOCUMENTO FT
+       SET FT.VALORTXT = VN_ACTIONID
+     WHERE FT.IDFICHA = AN_FICHA
+       AND FT.ETIQUETA = 'ACTIONID';
+  
+    UPDATE SGACRM.FT_INSTDOCUMENTO FT
+       SET FT.VALORTXT = VN_PRIORIDAD
+     WHERE FT.IDFICHA = AN_FICHA
+       AND FT.ETIQUETA = 'PRIORITY';
+    COMMIT;
+  EXCEPTION
+    WHEN OTHERS THEN
+      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGASS_ACTUALIZAR_ACTION: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, AN_TIPTRA, NULL, NULL, VN_ERROR_MSG);
+      AN_CODIGO  := VN_ERROR_E1;
+      AV_MENSAJE := VN_ERROR_MSG;
+      ROLLBACK;
+  END;
+  
+  FUNCTION SGAS_FUN_NETWORK_SERVICE (PI_CODINSSRV OPERACION.INSSRV.CODINSSRV%TYPE,
+                                     PI_ACTION    NUMBER) RETURN VARCHAR2 IS
+  VV_NET_SERV  VARCHAR2(50);
+
+  BEGIN
+    
+    IF PI_ACTION IN (8,11) THEN
+    SELECT TO_CHAR(REPLACE(WM_CONCAT(DESCRIPCION), ',', ''))
+      INTO VV_NET_SERV
+      FROM (SELECT O.DESCRIPCION, O.CODIGON
+              FROM INSSRV I, INSPRD P, OPERACION.OPEDD O, OPERACION.TIPOPEDD T
+             WHERE I.CODINSSRV = P.CODINSSRV
+               AND P.CODSRV = O.CODIGOC
+               AND O.TIPOPEDD = T.TIPOPEDD
+               AND I.CODINSSRV = PI_CODINSSRV
+               AND T.ABREV = 'TIPTRA_CONFIG_IL'
+               AND O.ABREVIACION = 'ASIGNA_NETWORK_SERVICE'
+               AND P.ESTINSPRD IN (1, 2)
+             GROUP BY O.DESCRIPCION, O.CODIGON
+             ORDER BY O.CODIGON ASC);
+    END IF;
+    RETURN VV_NET_SERV;
+  
+  EXCEPTION
+    WHEN OTHERS THEN
+/*      VN_ERROR_MSG := $$PLSQL_UNIT || '.' || 'SGAS_FUN_VALIDA_IP: ' ||
+                      SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                      DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      
+      SGASI_TRAZABILIDAD_LOG(NULL, NULL, NULL, PI_CID, VN_ERROR_MSG);*/
+      RAISE;
+  END SGAS_FUN_NETWORK_SERVICE;
+  
+  PROCEDURE SGASU_LIBERAR_MSISDN_SANS(AN_CODSOLOT     OPERACION.SOLOT.CODSOLOT%TYPE,
+                                      AN_CODIGO_RESP  OUT NUMBER,
+                                      AV_MENSAJE_RESP OUT VARCHAR2) IS
+
+    VN_COD_RESP  NUMBER;
+    VV_MSJ_RESP  VARCHAR2(4000);
+    VV_ERROR_MSG VARCHAR2(4000);
+    VE_ERROR     EXCEPTION;
+    VV_NUMERO    VARCHAR2(50);
+
+  BEGIN
+     
+     SELECT SPE.MAC
+       INTO VV_NUMERO
+       FROM OPERACION.SOLOTPTOEQU SPE, OPERACION.SOLOTPTO PTO
+      WHERE SPE.CODSOLOT = PTO.CODSOLOT
+        AND PTO.CODINSSRV IN
+            (SELECT CODINSSRV
+               FROM OPERACION.SOLOTPTO
+              WHERE CODSOLOT = AN_CODSOLOT)
+        AND SPE.TIPEQU IN
+            (SELECT A.CODIGON
+               FROM OPEDD A, TIPOPEDD B
+              WHERE A.TIPOPEDD = B.TIPOPEDD
+                AND B.ABREV = 'TIPEQU_FITEL_TLF')
+      GROUP BY SPE.MAC;
+       
+     UPDATE OPEDD O
+        SET O.CODIGOC = 'DISPONIBLE', O.CODIGON = NULL
+      WHERE O.TIPOPEDD =(SELECT TIPOPEDD FROM TIPOPEDD WHERE ABREV = 'NUMERO_FIC_FITEL')
+        AND O.DESCRIPCION = VV_NUMERO;
+        
+  EXCEPTION
+    WHEN VE_ERROR THEN
+      AN_CODIGO_RESP  := VN_COD_RESP;
+      AV_MENSAJE_RESP := VV_MSJ_RESP;
+    WHEN OTHERS THEN
+      AN_CODIGO_RESP := VN_ERROR_E1;
+      VV_ERROR_MSG   := $$PLSQL_UNIT || '.' || 'SGASU_LIBERAR_MSISDN_SANS: ' || SQLCODE || ' ' || SQLERRM || ' Linea:' ||
+                        DBMS_UTILITY.FORMAT_ERROR_BACKTRACE;
+      SGASI_TRAZABILIDAD_LOG(AN_CODSOLOT, NULL, NULL, NULL, VV_ERROR_MSG);
+      AV_MENSAJE_RESP := VV_ERROR_MSG;
+  END;
+END PKG_TRANSACCIONES_SGA;
+/

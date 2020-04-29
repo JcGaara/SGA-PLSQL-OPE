@@ -1,0 +1,58 @@
+CREATE TABLE OPERACION.OPE_INS_EQUIPO_CAB
+(
+  IDINS_EQUIPO       NUMBER(8)                  NOT NULL,
+  TIPEQU             NUMBER(6)                  NOT NULL,
+  SERIE              VARCHAR2(100 BYTE),
+  MAC1               VARCHAR2(30 BYTE),
+  MAC2               VARCHAR2(30 BYTE),
+  MODELO             VARCHAR2(40 BYTE),
+  CODSOLOT           NUMBER(8),
+  CODCLI             CHAR(8 BYTE),
+  CODSUC             CHAR(10 BYTE),
+  NUMSLC             CHAR(10 BYTE),
+  TOT_LINEAS         NUMBER(4)                  DEFAULT 0,
+  NUM_LINEAS_LIBRES  NUMBER(4)                  DEFAULT 0,
+  ESTADO             NUMBER(1)                  DEFAULT 1,
+  USUREG             VARCHAR2(30 BYTE)          DEFAULT USER,
+  FECREG             DATE                       DEFAULT SYSDATE,
+  USUMOD             VARCHAR2(30 BYTE)          DEFAULT USER,
+  FECMOD             DATE                       DEFAULT SYSDATE
+);
+
+COMMENT ON TABLE OPERACION.OPE_INS_EQUIPO_CAB IS 'CABECERA PARA CONTROL DE EQUIPOS';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.IDINS_EQUIPO IS 'Identificador de instancia de equipo';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.TIPEQU IS 'Tipo de equipo';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.SERIE IS 'Serie';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.MAC1 IS 'Mac address del cablemodem (Internet)';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.MAC2 IS 'Mac address del mta (telefonia)';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.MODELO IS 'Modelo';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.CODSOLOT IS 'Identificador de solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.CODCLI IS 'Identificador de cliente';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.CODSUC IS 'Identificador de sucursal';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.NUMSLC IS 'Numero del proyecto';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.TOT_LINEAS IS 'Capacidad de lineas telefonicas que soporta el equipo (puertos)';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.NUM_LINEAS_LIBRES IS 'Numero de lineas telefonicas libres (puertos)';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.ESTADO IS '1:Activo, 0:Inactivo';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.USUREG IS 'Usuario   que   insertó   el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.FECREG IS 'Fecha que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.USUMOD IS 'Usuario   que modificó   el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_INS_EQUIPO_CAB.FECMOD IS 'Fecha   que se   modificó el registro';
+
+

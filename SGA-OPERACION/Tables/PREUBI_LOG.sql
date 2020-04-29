@@ -1,0 +1,25 @@
+CREATE TABLE OPERACION.PREUBI_LOG
+(
+  ORDEN           NUMBER                        NOT NULL,
+  PUNTO           NUMBER(10)                    NOT NULL,
+  CODSOLOT        NUMBER(8)                     NOT NULL,
+  FECREAGENDA     DATE,
+  USUREAGENDA     VARCHAR2(30 BYTE),
+  CODCONREAGENDA  NUMBER
+);
+
+COMMENT ON TABLE OPERACION.PREUBI_LOG IS 'Tabla de log del reagendamiento en Detalle del presupuesto';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.ORDEN IS 'PK';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.PUNTO IS 'Punto del presupuesto';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.FECREAGENDA IS 'Fecha de reagendamiento';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.USUREAGENDA IS 'Usuario de reagendamiento';
+
+COMMENT ON COLUMN OPERACION.PREUBI_LOG.CODCONREAGENDA IS 'Código de contrata reagendada';
+
+

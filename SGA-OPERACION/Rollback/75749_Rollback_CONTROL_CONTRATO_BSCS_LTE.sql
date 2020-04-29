@@ -1,0 +1,1 @@
+drop table operacion.control_contrato_bscs_lte;

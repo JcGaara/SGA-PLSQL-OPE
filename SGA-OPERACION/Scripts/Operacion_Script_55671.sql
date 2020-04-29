@@ -1,0 +1,27 @@
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_DOCSIS','Interfase de intraway DOCSIS','N',620,'Interfase de intraway DOCSIS para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_PACKETCABLE','Interfase de intraway PACKETCABLE','N',820,'Interfase de intraway PACKETCABLE para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_ENDPOINTS','Interfase de intraway ENDPOINTS','N',824,'Interfase de intraway ENDPOINTS para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_CALLFEATURES','Interfase de intraway CALLFEATURES','N',830,'Interfase de intraway CALLFEATURES para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_DAC','Interfase de intraway DAC','N',2020,'Interfase de intraway DAC para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_SERV_ADIC','Interfase de intraway SERVICIOS Adicionales','N',2030,'Interfase de intraway SERVICIOS para la mejora de bajas');
+INSERT INTO OPERACION.CONSTANTE (CONSTANTE,DESCRIPCION,TIPO,VALOR,OBS)
+VALUES
+('IW_SERV_VOD','Interfase de intraway SERVICIOS VOD','N',2050,'Interfase de intraway SERVICIOS para la mejora de bajas');
+
+
+Commit;
+
+
+

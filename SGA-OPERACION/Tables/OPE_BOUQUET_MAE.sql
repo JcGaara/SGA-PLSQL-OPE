@@ -1,0 +1,31 @@
+CREATE TABLE OPERACION.OPE_BOUQUET_MAE
+(
+  IDBOUQUET    NUMBER(5)                        NOT NULL,
+  CODBOUQUET   NUMBER(5),
+  DESCRIPCION  VARCHAR2(100 BYTE),
+  FLG_ACTIVO   NUMBER(1)                        DEFAULT 1,
+  USUREG       VARCHAR2(30 BYTE)                DEFAULT USER,
+  FECREG       DATE                             DEFAULT SYSDATE,
+  USUMOD       VARCHAR2(30 BYTE)                DEFAULT USER,
+  FECMOD       DATE                             DEFAULT SYSDATE
+);
+
+COMMENT ON TABLE OPERACION.OPE_BOUQUET_MAE IS 'Tabla que contiene los bouquets de DTH';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.IDBOUQUET IS 'Identificador del registro de la tabla ';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.CODBOUQUET IS 'Código de Bouquet';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.DESCRIPCION IS 'Descriptivo del bouquet';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.FLG_ACTIVO IS 'Estado del registro del bouquet. 0: Inactivo, 1: Activo';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.USUREG IS 'Usuario que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.FECREG IS 'Fecha que inserto el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.USUMOD IS 'Usuario que modificó el registro';
+
+COMMENT ON COLUMN OPERACION.OPE_BOUQUET_MAE.FECMOD IS 'Fecha que se modificó el registro';
+
+

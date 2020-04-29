@@ -1,0 +1,10 @@
+insert into OPERACION.tipopedd (DESCRIPCION, ABREV)
+values ('VALCIERRETARMANTO', 'VALCIERRETARMANTO');
+
+insert into OPERACION.opedd (CODIGOC, CODIGON, DESCRIPCION, ABREVIACION, TIPOPEDD, CODIGON_AUX)
+values ('835', 497, '', 'VALCIERRETARMANTO', (select t.tipopedd from OPERACION.tipopedd t where t.abrev = 'VALCIERRETARMANTO'), 940);
+insert into OPERACION.opedd (CODIGOC, CODIGON, DESCRIPCION, ABREVIACION, TIPOPEDD, CODIGON_AUX)
+values ('835', 617, '', 'VALCIERRETARMANTO', (select t.tipopedd from OPERACION.tipopedd t where t.abrev = 'VALCIERRETARMANTO'), 1103);
+
+COMMIT
+/

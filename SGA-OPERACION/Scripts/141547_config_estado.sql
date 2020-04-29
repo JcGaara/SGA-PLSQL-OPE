@@ -1,0 +1,5 @@
+insert into operacion.opedd (CODIGOC, CODIGON, DESCRIPCION, ABREVIACION, TIPOPEDD, CODIGON_AUX)
+values ( '', 424, 'HFC - INSTALACION PAQUETES TODO CLARO DIGITAL', 'BAJ', 1050, null);
+
+commit;
+

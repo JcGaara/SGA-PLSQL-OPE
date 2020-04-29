@@ -1,0 +1,32 @@
+CREATE TABLE OPERACION.TRANSACCIONES
+(
+  IDTRANS        NUMBER                         NOT NULL,
+  IDFAC          CHAR(10 BYTE),
+  NOMABR         VARCHAR2(50 BYTE),
+  CODCLI         CHAR(8 BYTE),
+  TRANSACCION    CHAR(10 BYTE),
+  FECINI         DATE,
+  FECFIN         DATE,
+  CODSOLOT       NUMBER(8),
+  CODUSU         VARCHAR2(30 BYTE),
+  FECUSU         DATE                           DEFAULT SYSDATE,
+  IDTRANSORI     NUMBER,
+  FECEMI         DATE,
+  FECVEN         DATE,
+  TIPO           NUMBER,
+  ESTTRANS       VARCHAR2(100 BYTE),
+  FECREGAVISUSP  DATE,
+  USUREGAVISUSP  VARCHAR2(30 BYTE)
+);
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES.FECEMI IS 'Fecha de emisión del documento';
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES.FECVEN IS 'Fecha de vencimiento del documento';
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES.TIPO IS 'tipo de linea (1 nalogica, 2 xplora)';
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES.FECREGAVISUSP IS 'Fecha de entrega de carta de aviso de corte';
+
+COMMENT ON COLUMN OPERACION.TRANSACCIONES.USUREGAVISUSP IS 'Usuario que registra fecha de carta de aviso de corte';
+
+

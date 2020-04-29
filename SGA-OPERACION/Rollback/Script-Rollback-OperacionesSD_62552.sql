@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON operacion.pq_portabilidad_num_fija FROM dblink_pvudb;

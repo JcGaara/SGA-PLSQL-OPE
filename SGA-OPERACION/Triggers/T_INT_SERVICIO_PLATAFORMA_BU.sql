@@ -1,0 +1,12 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_INT_SERVICIO_PLATAFORMA_BU
+ BEFORE UPDATE ON operacion.INT_SERVICIO_PLATAFORMA
+FOR EACH ROW
+BEGIN
+   :new.usumod := user;
+   :new.fecmod := sysdate;
+
+END;
+/
+
+
+

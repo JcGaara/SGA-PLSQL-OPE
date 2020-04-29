@@ -1,0 +1,10 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_EF_BD
+ BEFORE DELETE ON EF
+FOR EACH ROW
+BEGIN
+   delete ar where codef = :old.codef;
+END T_EF_BD;
+/
+
+
+

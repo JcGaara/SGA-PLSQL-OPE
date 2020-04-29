@@ -1,0 +1,10 @@
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'ALL-DAY','Todo El dia',null,null,null,null,null,0);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'AM1','Time slot AM1 9am a 11 am','09:00 - 11:00','09:00','AM','11:00','AM',1);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'AM2','Time slot AM2 11am a 1pm','11:00 - 01:00','11:00','AM','01:00','PM',1);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'PM1','Time slot 2pm a 4pm','02:00 - 04:00','02:00','PM','04:00','PM',1);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'PM2','Time slot 4pm a 6pm','04:00 - 06:00','04:00','PM','06:00','PM',1);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'PM3','Time slot 6pm a 8pm','06:00 - 08:00','06:00','PM','08:00','PM',1);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'LUNCH','Time slot 1pm a 2pm',null,null,null,null,null,0);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'ALM1','Time slot de Almacen 7am - 8am',null,null,null,null,null,0);
+INSERT INTO operacion.franja_horaria VALUES(operacion.seq_idfranja.NEXTVAL,'ALM2','Time slot de Almacen 5pm - 8pm',null,null,null,null,null,0);
+COMMIT;

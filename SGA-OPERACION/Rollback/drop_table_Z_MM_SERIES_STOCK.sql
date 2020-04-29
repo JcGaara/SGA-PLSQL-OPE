@@ -1,0 +1,1 @@
+DROP TABLE operacion.Z_MM_SERIES_STOCK;

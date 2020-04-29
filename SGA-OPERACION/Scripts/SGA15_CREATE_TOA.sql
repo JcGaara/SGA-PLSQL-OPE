@@ -1,0 +1,48 @@
+CREATE TABLE operacion.sgat_act_incognito_log
+(
+  idlog        NUMBER NOT NULL,
+  codsolot     NUMBER,
+  proceso      VARCHAR2(500),
+  iderr        NUMBER,
+  mjerr        VARCHAR2(500),
+  usucrea      VARCHAR2(30) DEFAULT USER,
+  feccrea      DATE DEFAULT SYSDATE,
+  ipaplicacion VARCHAR2(30) DEFAULT SYS_CONTEXT('USERENV','IP_ADDRESS'),
+  pcaplicacion VARCHAR2(100) DEFAULT SYS_CONTEXT('USERENV', 'TERMINAL')
+)
+TABLESPACE operacion_dat
+  PCTFREE 10
+  INITRANS 1
+  MAXTRANS 255
+  STORAGE
+  (
+    INITIAL 64K
+    NEXT 1M
+    MINEXTENTS 1
+    MAXEXTENTS UNLIMITED
+  );
+
+CREATE OR REPLACE TRIGGER operacion.sgat_act_incognito_log_bi
+  BEFORE INSERT ON operacion.sgat_act_incognito_log
+  FOR EACH ROW
+DECLARE
+  tmpvar NUMBER;
+BEGIN
+  IF :new.idlog IS NULL THEN
+    SELECT nvl(MAX(idlog), 0) + 1
+      INTO :new.idlog
+      FROM operacion.sgat_act_incognito_log;
+  END IF;
+END;
+/
+
+ALTER TABLE operacion.sgat_importacion_masiva_det
+ADD impdn_idzona NUMBER
+/
+
+GRANT ALL ON OPERACION.SGAT_SRVEQU_INCOGNITO TO R_PROD;
+GRANT ALL ON OPERACION.SGAT_SRVEQU_INCOGNITO TO INTRAWAY;
+GRANT ALL ON OPERACION.SGAT_ACT_INCOGNITO_LOG TO R_PROD;
+GRANT ALL ON OPERACION.SGAT_ACT_INCOGNITO_LOG TO INTRAWAY;
+GRANT ALL ON OPERACION.SGAT_COMPAR_SOT_ACT_NOACT TO R_PROD;
+GRANT ALL ON OPERACION.SGAT_COMPAR_SOT_ACT_NOACT TO INTRAWAY;

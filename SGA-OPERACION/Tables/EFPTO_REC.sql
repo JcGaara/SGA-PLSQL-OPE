@@ -1,0 +1,130 @@
+CREATE TABLE OPERACION.EFPTO_REC
+(
+  CODEF           NUMBER(8)                     NOT NULL,
+  PUNTO           NUMBER(10)                    NOT NULL,
+  DESCRIPCION     VARCHAR2(100 BYTE),
+  CODINSSRV       NUMBER(10),
+  CODSUC          CHAR(10 BYTE),
+  CODUBI          CHAR(10 BYTE),
+  POP             NUMBER(10),
+  DIRECCION       VARCHAR2(480 BYTE),
+  CODSRV          CHAR(4 BYTE),
+  BW              NUMBER(8,2)                   DEFAULT 0                     NOT NULL,
+  COSMO           NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  COSMAT          NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  COSEQU          NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  COSMOCLI        NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  COSMATCLI       NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  FECINI          DATE                          DEFAULT sysdate,
+  NUMDIAPLA       NUMBER(3),
+  FECFIN          DATE,
+  OBSERVACION     VARCHAR2(500 BYTE),
+  COORDX1         VARCHAR2(3 BYTE),
+  COORDY1         NUMBER(3),
+  COORDX2         VARCHAR2(3 BYTE),
+  COORDY2         NUMBER(3),
+  FECUSU          DATE                          DEFAULT SYSDATE               NOT NULL,
+  CODUSU          VARCHAR2(30 BYTE)             DEFAULT user                  NOT NULL,
+  TIPTRA          NUMBER(4),
+  NROLINEAS       NUMBER(3),
+  NROFACREC       NUMBER(2),
+  NROHUNG         NUMBER(2),
+  NROIGUAL        NUMBER(2),
+  COSMO_S         NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  COSMAT_S        NUMBER(10,2)                  DEFAULT 0                     NOT NULL,
+  CODTIPFIBRA     NUMBER(2),
+  LONFIBRA        NUMBER(8,2),
+  ACTCAD          NUMBER(1)                     DEFAULT 0,
+  NROCANAL        NUMBER(3)                     DEFAULT 0,
+  TIPTRAEF        NUMBER(4),
+  TIPRECHAZO_OPE  NUMBER(2),
+  TIPRECHAZO_FNZ  NUMBER(2),
+  FECUSUDEL       DATE                          DEFAULT SYSDATE               NOT NULL,
+  CODUSUDEL       VARCHAR2(30 BYTE)             DEFAULT user                  NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.EFPTO_REC IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODEF IS 'Codigo del estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.PUNTO IS 'Punto del estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.DESCRIPCION IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODINSSRV IS 'Codigo de instancia de servicio';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODSUC IS 'Codigo de la sucursal';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODUBI IS 'Codigo del distrito';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.POP IS 'Pop';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.DIRECCION IS 'Direccion';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODSRV IS 'Codigo de servicio';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.BW IS 'Ancho de banda';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMO IS 'Costo de mano de obra';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMAT IS 'Costo del material';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSEQU IS 'Costo del equipo';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMOCLI IS 'Costo de mano de obra';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMATCLI IS 'Costo del material';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.FECINI IS 'Fecha de inicio';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NUMDIAPLA IS 'Nro de dias de plazo';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.FECFIN IS 'Fecha final';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.OBSERVACION IS 'Observación';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COORDX1 IS 'Indica las coordenadas x';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COORDY1 IS 'Indica las coordenadas y';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COORDX2 IS 'Indica las coordenadas x';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COORDY2 IS 'Indica las coordenadas y';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODUSU IS 'Codigo de Usuario registro';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.TIPTRA IS 'Codigo del tipo de trabajo';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NROLINEAS IS 'Nro lineas (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NROFACREC IS 'Nro facil de recordación (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NROHUNG IS 'Nro hunting (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NROIGUAL IS 'Nro igual (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMO_S IS 'Costo de mano de obra en soles';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.COSMAT_S IS 'Costo del material en soles';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODTIPFIBRA IS 'Codigo del tipo de fibra';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.LONFIBRA IS 'Longitud de la fibra';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.ACTCAD IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.NROCANAL IS 'Nro canal (No se utiliza)';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.TIPTRAEF IS 'Codigo del tipo de trabajo de estudio de factibilidad';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.TIPRECHAZO_OPE IS 'Tipo de rechazo de operaciones';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.TIPRECHAZO_FNZ IS 'Tipo de rechazo financiero';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.FECUSUDEL IS 'Fecha de registro borrar';
+
+COMMENT ON COLUMN OPERACION.EFPTO_REC.CODUSUDEL IS 'Registra el usuario al borrar un registro';
+
+

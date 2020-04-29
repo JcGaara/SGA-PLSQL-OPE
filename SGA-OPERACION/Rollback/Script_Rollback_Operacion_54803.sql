@@ -1,0 +1,6 @@
+DROP TRIGGER operacion.T_AREAOPE_AIUD;
+commit;
+DROP TRIGGER operacion.T_CONTRATAXAREA_AIUD;
+commit;
+DROP TRIGGER operacion.T_USUARIOXCONTRATA_AIUD;
+commit;

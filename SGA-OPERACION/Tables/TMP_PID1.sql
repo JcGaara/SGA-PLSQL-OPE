@@ -1,0 +1,13 @@
+CREATE TABLE OPERACION.TMP_PID1
+(
+  CODSOLOT  NUMBER(8)                           NOT NULL,
+  NUMSLC    CHAR(10 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.TMP_PID1 IS 'No es usada';
+
+COMMENT ON COLUMN OPERACION.TMP_PID1.CODSOLOT IS 'Codigo de la solicitud de orden de trabajo';
+
+COMMENT ON COLUMN OPERACION.TMP_PID1.NUMSLC IS 'Numero de proyecto';
+
+

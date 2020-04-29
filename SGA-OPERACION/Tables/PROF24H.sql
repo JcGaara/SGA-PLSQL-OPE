@@ -1,0 +1,18 @@
+CREATE TABLE OPERACION.PROF24H
+(
+  PID        NUMBER(10)                         NOT NULL,
+  CODCLI     CHAR(8 BYTE)                       NOT NULL,
+  ESTINSSRV  CHAR(1 BYTE),
+  ESTENV     NUMBER,
+  NUMINT     NUMBER,
+  ERROR      VARCHAR2(1000 BYTE),
+  FLGCORREO  NUMBER
+);
+
+COMMENT ON COLUMN OPERACION.PROF24H.ESTINSSRV IS 'estado del servicio (A: ALTA, B: Baja)';
+
+COMMENT ON COLUMN OPERACION.PROF24H.ESTENV IS 'flag de envio (0: sin enviar, 1: enviado)';
+
+COMMENT ON COLUMN OPERACION.PROF24H.NUMINT IS 'numero de intentos de envio';
+
+

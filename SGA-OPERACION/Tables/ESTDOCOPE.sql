@@ -1,0 +1,19 @@
+CREATE TABLE OPERACION.ESTDOCOPE
+(
+  ESTDOCOPE    NUMBER(2)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(100 BYTE)               NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL
+);
+
+COMMENT ON TABLE OPERACION.ESTDOCOPE IS 'Estado de los documentos de operaciones';
+
+COMMENT ON COLUMN OPERACION.ESTDOCOPE.ESTDOCOPE IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.ESTDOCOPE.DESCRIPCION IS 'No se utiliza';
+
+COMMENT ON COLUMN OPERACION.ESTDOCOPE.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.ESTDOCOPE.CODUSU IS 'Codigo de Usuario registro';
+
+

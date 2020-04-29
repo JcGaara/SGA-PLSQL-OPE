@@ -1,0 +1,5 @@
+CREATE OR REPLACE DIRECTORY 
+DB_ORI5 AS 
+'/u93/arch';
+
+

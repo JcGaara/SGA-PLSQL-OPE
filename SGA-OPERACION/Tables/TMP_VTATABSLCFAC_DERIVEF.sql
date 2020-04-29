@@ -1,0 +1,16 @@
+CREATE TABLE OPERACION.TMP_VTATABSLCFAC_DERIVEF
+(
+  NUMSLC       CHAR(10 BYTE),
+  NUMPTO       CHAR(5 BYTE),
+  CODCLI       CHAR(8 BYTE),
+  TIPSRV       CHAR(4 BYTE),
+  TIPSOLEF     NUMBER(4),
+  CLIINT       CHAR(3 BYTE),
+  CODUBI       CHAR(10 BYTE),
+  IDCATEGORIA  NUMBER(4),
+  ESTADO       NUMBER(1)                        DEFAULT 1,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user,
+  FECUSU       DATE                             DEFAULT SYSDATE
+);
+
+

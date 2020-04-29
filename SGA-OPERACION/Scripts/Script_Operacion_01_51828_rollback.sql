@@ -1,0 +1,3 @@
+alter table OPERACION.OPE_CARGA_DIARIA_TMP drop column OBSERVACION;
+alter table OPERACION.OPE_CARGA_INICIAL_TMP drop column OBSERVACION;
+/

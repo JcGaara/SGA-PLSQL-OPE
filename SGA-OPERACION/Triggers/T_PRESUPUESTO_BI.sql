@@ -1,0 +1,17 @@
+CREATE OR REPLACE TRIGGER OPERACION.T_PRESUPUESTO_BI
+ BEFORE INSERT ON PRESUPUESTO
+FOR EACH ROW
+DECLARE
+tmpVar NUMBER;
+
+BEGIN
+   tmpVar := 0;
+   if :new.codpre is null then
+      SELECT SQ_PRESUPUESTO.NEXTVAL INTO :new.codpre FROM dual;
+   end if;
+
+END;
+/
+
+
+

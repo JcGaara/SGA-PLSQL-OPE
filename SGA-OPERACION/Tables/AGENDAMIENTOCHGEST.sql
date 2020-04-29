@@ -1,0 +1,34 @@
+CREATE TABLE OPERACION.AGENDAMIENTOCHGEST
+(
+  IDSEQ        NUMBER(10)                       NOT NULL,
+  IDAGENDA     NUMBER(8)                        NOT NULL,
+  TIPO         NUMBER(1)                        NOT NULL,
+  ESTADO       NUMBER(4)                        NOT NULL,
+  USUREG       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECREG       DATE                             DEFAULT sysdate               NOT NULL,
+  USUMOD       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  FECMOD       DATE                             DEFAULT sysdate               NOT NULL,
+  OBSERVACION  VARCHAR2(4000 BYTE)
+);
+
+COMMENT ON TABLE OPERACION.AGENDAMIENTOCHGEST IS 'Cambios de estado del AGENDAMIENTO';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.IDSEQ IS 'Pk de la tabla';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.IDAGENDA IS 'ID agendamiento';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.TIPO IS 'Tipo de cambio de estado';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.ESTADO IS 'Codigo del estado de agenda';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.USUREG IS 'Usuario que insertó el registro';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.FECREG IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.USUMOD IS 'Usuario que modificó el registro';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.FECMOD IS 'Fecha que se modificó el registro';
+
+COMMENT ON COLUMN OPERACION.AGENDAMIENTOCHGEST.OBSERVACION IS 'Observacion';
+
+

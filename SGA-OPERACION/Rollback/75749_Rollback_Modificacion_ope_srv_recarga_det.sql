@@ -1,0 +1,2 @@
+Alter table OPERACION.OPE_SRV_RECARGA_DET drop column REQUEST; 
+Alter table OPERACION.OPE_SRV_RECARGA_DET drop column REQUEST_PADRE;

@@ -1,0 +1,1 @@
+ALTER TABLE OPERACION.rotacion_auto_archivo ADD CONSTRAINT PK_ID_ARCHIVO_ROT PRIMARY KEY (id_archivo);

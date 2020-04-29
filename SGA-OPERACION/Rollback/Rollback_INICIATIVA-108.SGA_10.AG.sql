@@ -1,0 +1,2 @@
+drop index ATCCORP.IDX_CODIGO2;
+/

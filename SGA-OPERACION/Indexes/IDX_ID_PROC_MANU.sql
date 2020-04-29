@@ -1,0 +1,1 @@
+create unique index operacion.idx_id_proc_manu on operacion.cab_atc_cort_manu_dth(id_proc_manu) tablespace OPERACION_IDX;

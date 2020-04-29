@@ -1,0 +1,1 @@
+create unique index operacion.idx_id_archivo_rot on operacion.rotacion_auto_archivo(id_archivo) tablespace OPERACION_IDX;

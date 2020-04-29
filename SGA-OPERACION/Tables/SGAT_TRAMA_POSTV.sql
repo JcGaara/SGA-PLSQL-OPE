@@ -1,0 +1,22 @@
+-- CREATE TABLE
+CREATE TABLE OPERACION.SGAT_TRAMA_POSTV
+(
+  TRPOSTV_TRAMAID     	NUMBER NOT NULL,
+  TRPOSTV_DESCRIPTION 	VARCHAR2(400) NOT NULL,
+  TRPOSTV_TYPE        	VARCHAR2(40),
+  TRPOSTV_ABREV       	VARCHAR2(40),
+  TRPOSTV_TABLA_PINC	VARCHAR2(40),
+  TRPOSTV_TABLA_EXT		VARCHAR2(40),
+  TRPOSTV_IDENTIFICADOR VARCHAR2(40)
+)
+tablespace OPERACION_DAT
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );

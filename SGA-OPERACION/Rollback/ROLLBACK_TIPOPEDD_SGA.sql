@@ -1,0 +1,4 @@
+
+DELETE FROM operacion.tipopedd where ABREV =  'IPC_CTRL' and UPPER(DESCRIPCION) = 'CONTROLES DE RESERVA';
+
+COMMIT;

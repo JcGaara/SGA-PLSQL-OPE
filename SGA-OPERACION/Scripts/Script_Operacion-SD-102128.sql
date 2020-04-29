@@ -1,0 +1,56 @@
+INSERT INTO TIPOPEDD (TIPOPEDD, DESCRIPCION, ABREV)
+VALUES ((SELECT MAX(TIPOPEDD) + 1 FROM TIPOPEDD), 'Transaccion SUSP_GEN_RECONEX', 'GC_CONF_SOT_RX');
+commit;
+
+INSERT INTO OPEDD
+    (IDOPEDD,
+     CODIGOC,
+     CODIGON,
+     DESCRIPCION,
+     ABREVIACION,
+     TIPOPEDD,
+     CODIGON_AUX)
+VALUES
+    ((SELECT MAX(IDOPEDD) + 1 FROM OPEDD),
+     NULL,
+     1,
+     'Telefonia Fija',
+     'TELFIJA',
+     (SELECT tipopedd FROM TIPOPEDD T WHERE abrev = 'GC_CONF_SOT_RX'),
+     NULL);
+commit;
+INSERT INTO OPEDD
+    (IDOPEDD,
+     CODIGOC,
+     CODIGON,
+     DESCRIPCION,
+     ABREVIACION,
+     TIPOPEDD,
+     CODIGON_AUX)
+VALUES
+    ((SELECT MAX(IDOPEDD) + 2 FROM OPEDD),
+     NULL,
+     3,
+     'Claro Empresas',
+     'ClaEmpresa',
+     (SELECT tipopedd FROM TIPOPEDD T WHERE abrev = 'GC_CONF_SOT_RX'),
+     NULL);
+commit;
+
+INSERT INTO OPEDD
+    (IDOPEDD,
+     CODIGOC,
+     CODIGON,
+     DESCRIPCION,
+     ABREVIACION,
+     TIPOPEDD,
+     CODIGON_AUX)
+VALUES
+    ((SELECT MAX(IDOPEDD) + 3 FROM OPEDD),
+     NULL,
+     5,
+     'TPI',
+     'TPI',
+     (SELECT tipopedd FROM TIPOPEDD T WHERE abrev = 'GC_CONF_SOT_RX'),
+     NULL);
+commit;

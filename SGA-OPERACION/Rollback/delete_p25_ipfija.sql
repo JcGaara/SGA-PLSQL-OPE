@@ -1,0 +1,9 @@
+--CABECERA
+DELETE FROM operacion.opedd WHERE TIPOPEDD in
+(SELECT TIPOPEDD FROM operacion.tipopedd WHERE ABREV = 'CONFSERVADICIONAL' AND DESCRIPCION='Configuracion para Contin SGA');
+
+--DETALLE
+DELETE FROM operacion.tipopedd WHERE ABREV = 'CONFSERVADICIONAL' AND DESCRIPCION='Configuracion para Contin SGA';
+
+COMMIT;
+  

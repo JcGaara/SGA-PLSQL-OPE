@@ -1,0 +1,33 @@
+DELETE FROM OPERACION.OPEDD WHERE TIPOPEDD=(SELECT TIPOPEDD FROM OPERACION.TIPOPEDD WHERE DESCRIPCION = 'OP-Estado EquipoxOT') AND CODIGOC='EN DESINSTALACION';
+DELETE FROM OPERACION.OPEDD WHERE TIPOPEDD=(SELECT TIPOPEDD FROM OPERACION.TIPOPEDD WHERE ABREV = 'CONF_EQU_TIPO');
+DELETE FROM OPERACION.TIPOPEDD WHERE ABREV = 'CONF_EQU_TIPO';
+COMMIT;
+delete from opedd where descripcion = 'WLL/SIAC - CAMBIO DE EQUIPO' and CODIGON = (select tiptra from operacion.tiptrabajo where descripcion = 'WLL/SIAC - CAMBIO DE EQUIPO');
+delete from operacion.mototxtiptra where tiptra=(select tiptra from operacion.tiptrabajo where descripcion = 'WLL/SIAC - CAMBIO DE EQUIPO');
+delete from operacion.motot where descripcion in ('EQUIPO AVERIADO','REGULARIZACION');
+delete from operacion.tiptrabajo where descripcion='WLL/SIAC - DES. DECO ADICIONAL';
+delete from operacion.tiptrabajo where descripcion='WLL/SIAC - ACT. DECO ADICIONAL';
+delete from operacion.tiptrabajo where descripcion='WLL/SIAC - CAMBIO DE EQUIPO';
+delete from operacion.opedd where codigon_aux=8 and tipopedd=(select tipopedd from operacion.tipopedd where abrev='TIPO_TRANS_SIAC_LTE');
+delete from operacion.tiptrabajo where descripcion = 'WLL/SIAC - CAMBIO DE EQUIPO';
+delete from operacion.opedd where tipopedd=(select t.tipopedd from tipopedd t where t.abrev='WLL_SIAC_DEC_ADICIONAL');
+delete from operacion.tipopedd where tipopedd=(select t.tipopedd from tipopedd t where t.abrev='WLL_SIAC_DEC_ADICIONAL');
+commit;
+delete from operacion.opedd where tipopedd=(select t.tipopedd from tipopedd t where t.abrev='MATRIZ_DECOS_LTE');
+delete from operacion.tipopedd where tipopedd=(select t.tipopedd from tipopedd t where t.abrev='MATRIZ_DECOS_LTE');
+commit;
+alter table operacion.siac_postventa_proceso drop column trama;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN IDINTERACCION;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN FLAG_ACT_DIR_FACT;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN tiptra;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN TIPO_PRODUCTO;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN CODMOTOT;
+
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN CARGO;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN TIPOSERVICIO;
+ALTER TABLE OPERACION.SIAC_POSTVENTA_PROCESO DROP COLUMN COD_CASO;
+
+delete from operacion.opedd where tipopedd=260 and codigon=(select wfdef from opewf.wfdef where descripcion='WLL/SIAC - DES. DECO ADICIONAL');
+delete from operacion.opedd where tipopedd=260 and codigon=(select wfdef from opewf.wfdef where descripcion='WLL/SIAC - CAMBIO DE EQUIPO');
+delete from operacion.opedd where tipopedd=260 and codigon=(select wfdef from opewf.wfdef where descripcion='WLL/SIAC - DECO ADICIONAL');
+commit;

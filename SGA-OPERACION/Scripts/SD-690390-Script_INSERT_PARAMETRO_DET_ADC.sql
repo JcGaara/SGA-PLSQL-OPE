@@ -1,0 +1,6 @@
+INSERT INTO operacion.parametro_det_adc (id_parametro, codigoc, codigon, descripcion, abreviatura, estado) VALUES ((SELECT a.id_parametro FROM operacion.parametro_cab_adc a WHERE a.abreviatura = 'DISPONIBILIDAD_CAPACIDAD'), NULL, 1, 'FLAG ORDEN OT', 'FLG_ORDEN_OT', '1');
+INSERT INTO operacion.parametro_det_adc (id_parametro, codigoc, codigon, descripcion, abreviatura, estado) VALUES ((SELECT a.id_parametro FROM operacion.parametro_cab_adc a WHERE a.abreviatura = 'CREAR_OT_WF'), 'gestionarOrdenSGA_ADC', NULL, 'GESTIONAR ORDEN SGA', 'GESTIONAR_ORDEN_SGA', '1');
+INSERT INTO operacion.parametro_det_adc (id_parametro, codigoc, codigon, descripcion, abreviatura, estado) VALUES ((SELECT a.id_parametro FROM operacion.parametro_cab_adc a WHERE a.abreviatura = 'CREAR_OT_WF'), NULL, 3, 'RESPUESTA ERROR', 'RESPUESTA_ERROR', '1');
+INSERT INTO operacion.parametro_det_adc (id_parametro, codigoc, codigon, descripcion, abreviatura, estado) VALUES ((SELECT a.id_parametro FROM operacion.parametro_cab_adc a WHERE a.abreviatura = 'WARNING_BUCKET_ERROR'), 'BUCKET_ERROR', NULL, 'BUCKET_ERROR', '69122', '1');
+COMMIT;
+/

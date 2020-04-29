@@ -1,0 +1,20 @@
+CREATE TABLE OPERACION.TIPPROPIEDAD
+(
+  TIPPRP       NUMBER(2)                        NOT NULL,
+  DESCRIPCION  VARCHAR2(100 BYTE)               NOT NULL,
+  FECUSU       DATE                             DEFAULT SYSDATE               NOT NULL,
+  CODUSU       VARCHAR2(30 BYTE)                DEFAULT user                  NOT NULL,
+  ESTADO       NUMBER
+);
+
+COMMENT ON TABLE OPERACION.TIPPROPIEDAD IS 'Tipo de propieda de los equipos';
+
+COMMENT ON COLUMN OPERACION.TIPPROPIEDAD.TIPPRP IS 'Tipo de propiedad';
+
+COMMENT ON COLUMN OPERACION.TIPPROPIEDAD.DESCRIPCION IS 'Descripcion de tipo de propiedad';
+
+COMMENT ON COLUMN OPERACION.TIPPROPIEDAD.FECUSU IS 'Fecha de registro';
+
+COMMENT ON COLUMN OPERACION.TIPPROPIEDAD.CODUSU IS 'Codigo de Usuario registro';
+
+

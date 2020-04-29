@@ -1,0 +1,5 @@
+INSERT INTO OPERACION.CONSTANTE ( CONSTANTE, DESCRIPCION, TIPO, VALOR)
+       VALUES ( 'OPTHFCMAIL', 'HFC CORREO', 'C', 'SoporteTelefoniaFijayPortales@claro.com.pe');
+
+COMMIT;
+       

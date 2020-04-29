@@ -1,0 +1,7 @@
+--- CABECERA
+--1
+delete from OPERACION.TIPOPEDD where DESCRIPCION='estsol IW';
+--2
+delete from OPERACION.TIPOPEDD where DESCRIPCION='SERVICIOS SOT';
+
+COMMIT; 
