@@ -23,5 +23,8 @@ steps:
     SonarCloud: 'Connection PLSQL-SGA'
     organization: 'claro2020'
     scannerMode: 'CLI'
-    configMode: 'file'
+    configMode: 'manual'
+    cliProjectKey: 'SQA-OPERACION'
+    cliProjectName: 'SQA-OPERACION'
+    cliSources: '.'
 - task: SonarCloudAnalyze@1
